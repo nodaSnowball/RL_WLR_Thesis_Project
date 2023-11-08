@@ -8,6 +8,7 @@ from sac import SAC
 from torch.utils.tensorboard import SummaryWriter
 from replay_memory import ReplayMemory
 import envs.register
+from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
 parser.add_argument('--env-name', default="Biped-v0",
@@ -20,7 +21,7 @@ parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor for reward (default: 0.99)')
 parser.add_argument('--tau', type=float, default=0.005, metavar='G',
                     help='target smoothing coefficient(τ) (default: 0.005)')
-parser.add_argument('--lr', type=float, default=0.0001, metavar='G',
+parser.add_argument('--lr', type=float, default=0.005, metavar='G',
                     help='learning rate (default: 0.0003)')
 parser.add_argument('--alpha', type=float, default=0.2, metavar='G',
                     help='Temperature parameter α determines the relative importance of the entropy\
@@ -69,8 +70,10 @@ memory = ReplayMemory(args.replay_size, args.seed)
 # Training Loop
 total_numsteps = 0
 updates = 0
+ll = 20
+success_list = deque([], maxlen=ll)
 
-for i_episode in range(20000):
+for i_episode in range(10000):
     episode_reward = 0
     episode_steps = 0
     done = False
@@ -81,6 +84,7 @@ for i_episode in range(20000):
             action = env.action_space.sample()  # Sample random action
         else:
             action = agent.select_action(state)  # Sample action from policy
+        # if total_numsteps>1e4:
         env.render()
 
         if len(memory) > args.batch_size:
@@ -107,14 +111,22 @@ for i_episode in range(20000):
         memory.push(state, action, reward, next_state, mask) # Append transition to memory
 
         state = next_state
-
+    
+    is_success = 1 if reward==50 else 0
+    success_list.append(is_success)
+    success_rate = sum(success_list)/ll
+    
     if total_numsteps > args.num_steps:
         break
 
     writer.add_scalar('reward/train', episode_reward, i_episode)
-    print("Episode: {}, total numsteps: {}, episode steps: {}, reward: {}".format(i_episode, total_numsteps, episode_steps, round(episode_reward, 2)))
+    if i_episode<500 and i_episode % 10 == 0:
+        print("Episode: {}, success rate: {}, episode steps: {}, reward: {}".format(i_episode, success_rate, episode_steps, round(episode_reward, 2)))
+    elif i_episode>=500:
+        print("Episode: {}, success rate: {}, episode steps: {}, reward: {}".format(i_episode, success_rate, episode_steps, round(episode_reward, 2)))
 
-agent.save_model(args.env_name)
+    if i_episode%50==0 and success_rate>0.3:    # i_episode > 1000 and i_episode%200==0:
+        agent.save_model(args.env_name, suffix='lr_'+str(args.lr)+'_ep'+str(i_episode)+'_sr'+str(success_rate))
 
 env.close()
 

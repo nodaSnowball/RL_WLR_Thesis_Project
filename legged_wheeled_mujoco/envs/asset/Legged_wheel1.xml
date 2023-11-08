@@ -43,12 +43,13 @@
     <camera name="right" pos="0. -1 0.3" xyaxes="1. 0. 0. 0. 0. 1."/>
     <camera name="track" mode="trackcom" fovy="45" pos="0.5 -1. 0.35" xyaxes="0.866 0.5 0 0 0 1"/>
     <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid" solimp=".9 .95 .001" solref='-10000 -1000'/>
-    <geom name="stair1" type="mesh" mesh="stair1" pos="0.0 0 -0.05"/>
+    <geom name="stair" type="box" size=".5 1.5 .2" pos=".7 1 0" rgba=".8 .8 .8 1"/>
+    <!-- <geom name="stair1" type="mesh" mesh="stair1" pos="0.0 0 -0.05"/>
     <geom name="stair2" type="mesh" mesh="stair2" pos="0.2 0 -0.05"/>
     <geom name="stair3" type="mesh" mesh="stair3" pos="0.4 0 -0.05"/>
     <geom name="stair4" type="mesh" mesh="stair4" pos="0.6 0 -0.05"/>
-    <geom name="stair5" type="mesh" mesh="stair5" pos="0.8 0 -0.05"/>
-    <geom name="end" type="cylinder" size="0.1 0.01 0" pos="1.2 1 0.45" rgba="0 1 0 1" contype="0" conaffinity="0"/>
+    <geom name="stair5" type="mesh" mesh="stair5" pos="0.8 0 -0.05"/> -->
+    <geom name="end" type="cylinder" size="0.1 0.01 0" pos=".7 1 .2" rgba="0 1 0 1" contype="0" conaffinity="0"/>
     <!-- ======= ROBOT ======= -->
     <body name="base_link" pos="-0.2 1 0.395" euler="0 0 0">
       <inertial pos="0.018885 0.00062964 0.06018" quat="-0.064773 0.618315 0.0968439 0.777246" mass="4.6733" diaginertia="0.054592 0.0348635 0.0323885"/>
@@ -110,8 +111,8 @@
   <sensor>
     <!-- The sensor sequence cannot be changed -->
     <framequat name="Body_Quat" objtype="site" objname="imu" />
-    <gyro name="Body_Gyro" site="imu" />
-    <accelerometer name="Body_Acc" site="imu" />
+    <!-- <gyro name="Body_Gyro" site="imu" />
+    <accelerometer name="Body_Acc" site="imu" /> -->
   </sensor>
 
 </mujoco>
