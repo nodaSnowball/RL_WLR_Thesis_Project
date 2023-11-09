@@ -125,7 +125,7 @@ for i_episode in range(10000):
     elif i_episode>=500:
         print("Episode: {}, success rate: {}, episode steps: {}, reward: {}".format(i_episode, success_rate, episode_steps, round(episode_reward, 2)))
 
-    if i_episode%50==0 and success_rate>0.3:    # i_episode > 1000 and i_episode%200==0:
+    if i_episode%50==0 and success_rate>0.3 or i_episode%500==0:    # i_episode > 1000 and i_episode%200==0:
         agent.save_model(args.env_name, suffix='lr_'+str(args.lr)+'_ep'+str(i_episode)+'_sr'+str(success_rate))
 
 env.close()

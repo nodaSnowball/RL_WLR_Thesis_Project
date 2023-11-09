@@ -107,7 +107,7 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         approching_reward = 5*(d_before-d_after)# if forward_check>0 else 0 # -5*abs(d_before-d_after)
 
         done = self.done
-        reward =  approching_reward + self.healthy_reward - cost - punishment
+        reward =  approching_reward + self.healthy_reward - punishment # - cost
 
         # 判断是否到达终点
         if done == False:
@@ -130,13 +130,12 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         sensor = self.sim.data.sensordata # imu sensor on base [angular vel *3, linear vel*3, linear acc*3]
 
         observations = np.concatenate((position, velocity, sensor)) #目标位置
-        self.c_step = 0
 
         return observations
 
     # 重置模型
     def reset_model(self):
-        
+        self.c_step = 0
         qpos = self.init_qpos
         qvel = self.init_qvel
         # reset target
