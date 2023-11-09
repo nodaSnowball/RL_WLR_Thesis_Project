@@ -136,7 +136,7 @@
   <sensor>
     <!-- The sensor sequence cannot be changed -->
     <frameangvel name="Body_Angvel" objtype="site" objname="imu" />
-    <framelinvel name="Body_Linvel" objtype='site' objname="imu" reftype='body' refname='base_link' />
+    <framelinvel name="Body_Linvel" objtype='site' objname="imu" />
     <framelinacc name="Body_Linacc" objtype='site' objname="imu" />
     <framequat name='Body_Quat' objtype='site' objname='imu'/>
   </sensor>

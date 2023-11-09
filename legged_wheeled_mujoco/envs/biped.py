@@ -136,20 +136,18 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     # 重置模型
     def reset_model(self):
-        # self.sim.data.geom_xpos[self.model.geom_name2id("end")][0] = 38*random.random()-19# += self._reset_noise_scale * random.random()
-        # self.sim.data.geom_xpos[self.model.geom_name2id("end")][1] = 38*random.random()-19# += self._reset_noise_scale * random.random()
-        # self.xy_target = self.data.get_geom_xpos("end")[:2].copy()
+        
         qpos = self.init_qpos
         qvel = self.init_qvel
         # reset target
         qpos[0] = 20*random.random()-10
         qpos[1] = 20*random.random()-10
-        # qpos[2] = 20*random.random()-10
-        # qpos[3] = 20*random.random()-10
-        # qpos[5:9] = Rotation.from_euler('zyx',[0, 0, 2*np.pi*random.random()]).as_quat()
-        # while (qpos[2]==0 and qpos[3]==0) or (abs(qpos[0]-qpos[2])<0.1 or abs(qpos[1]-qpos[3])<0.1):
-        #     qpos[2] = 20*random.random()-10
-        #     qpos[3] = 20*random.random()-10
+        qpos[2] = 20*random.random()-10
+        qpos[3] = 20*random.random()-10
+        qpos[5:9] = Rotation.from_euler('zyx',[0, 0, 2*np.pi*random.random()]).as_quat()
+        while (qpos[2]==0 and qpos[3]==0) or ((qpos[0]-qpos[2])**2+(qpos[1]-qpos[3])**2)**0.5<0.1:
+            qpos[2] = 20*random.random()-10
+            qpos[3] = 20*random.random()-10
             
         self.set_state(qpos, qvel)
         observation = self._get_obs()
