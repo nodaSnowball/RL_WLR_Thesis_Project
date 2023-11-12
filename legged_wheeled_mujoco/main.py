@@ -19,7 +19,7 @@ parser.add_argument('--eval', type=bool, default=False,
                     help='Evaluates a policy a policy every 10 episode (default: True)')
 parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor for reward (default: 0.99)')
-parser.add_argument('--tau', type=float, default=0.005, metavar='G',
+parser.add_argument('--tau', type=float, default=0.001, metavar='G',
                     help='target smoothing coefficient(τ) (default: 0.005)')
 parser.add_argument('--lr', type=float, default=0.005, metavar='G',
                     help='learning rate (default: 0.0003)')
@@ -112,7 +112,7 @@ for i_episode in range(10000):
 
         state = next_state
     
-    is_success = 1 if reward==50 else 0
+    is_success = 1 if reward==10000 else 0
     success_list.append(is_success)
     success_rate = sum(success_list)/ll
     
@@ -126,7 +126,7 @@ for i_episode in range(10000):
         print("Episode: {}, success rate: {}, episode steps: {}, reward: {}".format(i_episode, success_rate, episode_steps, round(episode_reward, 2)))
 
     if i_episode%50==0 and success_rate>0.3 or i_episode%500==0:    # i_episode > 1000 and i_episode%200==0:
-        agent.save_model(args.env_name, suffix='lr_'+str(args.lr)+'_ep'+str(i_episode)+'_sr'+str(success_rate))
+        agent.save_model(args.env_name, suffix='certaininitpos_lr_'+str(args.lr)+'_ep'+str(i_episode)+'_sr'+str(success_rate))
 
 env.close()
 

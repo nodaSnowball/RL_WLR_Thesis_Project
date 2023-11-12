@@ -39,10 +39,7 @@
   <worldbody>
     <light directional="true" diffuse=".8 .8 .8" pos="0 0 10" dir="0 0 -10"/>
     <light pos="0.5 -.4 1." dir="1 2 -1.5" diffuse=".6 .6 .6"/>
-    <camera name="top" pos="0. 0. 2." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
-    <camera name="left" pos="0. 1 0.3" xyaxes="-1. 0. 0. 0. 0. 1."/>
-    <camera name="right" pos="0. -1 0.3" xyaxes="1. 0. 0. 0. 0. 1."/>
-    
+    <camera name="top" pos="0. 0. 25." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
     <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid" conaffinity='0' solref='0 -1000'/>
 
     <!-- <geom name="box2" pos="-2 1 0.18" size="0.8 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
@@ -59,14 +56,14 @@
     <geom name="box9" pos="0.671 1.0 0.458" size="0.5 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
     <geom name="box9r" pos="1.85 1.0 0.32" size="0.7 1.0 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 0.2 0" conaffinity="0"/>
     <geom name="box10" pos="3.04 1.0 0.18" size="0.5 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/> -->
-    <body name='end_ref' pos='10 10 0'>
+    <body name='end_ref' pos='0 0 0'>
       <joint name='end_x' type='slide' axis='1 0 0' limited='true' range='-20 20' />
       <joint name='end_y' type='slide' axis='0 1 0' limited='true' range='-20 20' />
-      <geom name="end" type="cylinder" pos=".0 .0 .0" size="0.2 0.01 0" rgba="0. 0.8 0. 1" contype='0' conaffinity="0"/>
+      <geom name="end" type="cylinder" pos="-0 -0 .0" size="0.2 0.01 0" rgba="0. 0.8 0. 1" contype='0' conaffinity="0"/>
     </body>
 
     <!-- ======= ROBOT ======= -->
-    <body name="base_link" pos="5. 0. 0.25" euler="0 0 0">
+    <body name="base_link" pos="10. 10. 0.25" euler="0 0 0">
       <camera name="track" mode="trackcom" fovy="45" pos="-3 -3 0.35" xyaxes="0.5 -0.5 0 0 0 1"/>
       <inertial pos="0.018885 0.00062964 0.06018" quat="-0.064773 0.618315 0.0968439 0.777246" mass="4.6733" diaginertia="0.054592 0.0348635 0.0323885"/>
       <joint name="floating_base" type="free" limited="false" frictionloss="0.001" damping="0.01" armature="0."/>
@@ -135,10 +132,19 @@
 
   <sensor>
     <!-- The sensor sequence cannot be changed -->
-    <frameangvel name="Body_Angvel" objtype="site" objname="imu" />
-    <framelinvel name="Body_Linvel" objtype='site' objname="imu" />
-    <framelinacc name="Body_Linacc" objtype='site' objname="imu" />
-    <framequat name='Body_Quat' objtype='site' objname='imu'/>
+    <jointpos name='target_x' joint='end_x' />
+    <jointpos name='target_y' joint='end_y' />
+    <framepos name='base_pos' objtype='body' objname='base_link' />
+    <framequat name='base_ori' objtype='body' objname='base_link' />
+    <jointpos name='left_hip_pos' joint='left_hip' />
+    <jointpos name='left_knee_pos' joint='left_knee' />
+    <jointpos name='right_hip_pos' joint='right_hip' />
+    <jointpos name='right_knee_pos' joint='right_knee' />
+    <jointvel name='left_wheel' joint='left_ankle' />
+    <jointvel name='right_wheel' joint='right_ankle' />
+    <velocimeter name="Base_Linear_vel" site="imu" />
+    <accelerometer name="Base_Linear_acc" site="imu" />
+    <gyro name='Base_Angular_vel' site='imu'/>
   </sensor>
 
 </mujoco>
