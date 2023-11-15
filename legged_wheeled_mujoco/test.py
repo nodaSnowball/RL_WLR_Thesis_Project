@@ -54,14 +54,17 @@ args = parser.parse_args()
 env = gym.make(args.env_name)
 agent = SAC(env.observation_space.shape[0], env.action_space, args)
 
-agent.load_model('./models/sac_actor_Biped-v0_0', './models/sac_critic_Biped-v0_0')
+agent.load_model('./models/sac_actor_Biped-v0_certaininitpos_lr_0.001_ep4300_sr0.82', './models/sac_critic_Biped-v0_certaininitpos_lr_0.001_ep4300_sr0.82')
 
+success = 0
 avg = 0.0
 res = []
 
 # Testing loop
 def testSAC():
-    for i in range(100):
+    success = 0
+    num_test = 100
+    for i in range(num_test):
         state = env.reset() # state size: 27
         ret = 0.0
         for t in count():
@@ -73,13 +76,18 @@ def testSAC():
             state = nextState
             if done:
                 print("Episode %d ended in %d steps" % (i + 1, t + 1))
+                if reward == 100:
+                    success += 1
                 res.append(ret)
                 # print('Return is',ret)
                 break
     avg = np.average(res)
-    return res, avg
+    sr = success/num_test
+    return res, avg, sr
 
 
-res, avg = testSAC()
+res, avg, sr = testSAC()
+
+print(f'average reward = {avg}, success rate = {sr}')
 
 

@@ -15,13 +15,14 @@ parser.add_argument('--env-name', default="Biped-v0",
                     help='Mujoco Gym environment (default: Biped-v0)')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')
+parser.add_argument('--suffix', default='', type=str)
 parser.add_argument('--eval', type=bool, default=False,
                     help='Evaluates a policy a policy every 10 episode (default: True)')
 parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor for reward (default: 0.99)')
 parser.add_argument('--tau', type=float, default=0.001, metavar='G',
                     help='target smoothing coefficient(τ) (default: 0.005)')
-parser.add_argument('--lr', type=float, default=0.005, metavar='G',
+parser.add_argument('--lr', type=float, default=0.001, metavar='G',
                     help='learning rate (default: 0.0003)')
 parser.add_argument('--alpha', type=float, default=0.2, metavar='G',
                     help='Temperature parameter α determines the relative importance of the entropy\
@@ -33,7 +34,7 @@ parser.add_argument('--seed', type=int, default=123456, metavar='N',
 parser.add_argument('--batch_size', type=int, default=256, metavar='N',
                     help='batch size (default: 256)')
 parser.add_argument('--num_steps', type=int, default=10000001, metavar='N',
-                    help='maximum number of steps (default: 1000000)')
+                    help='maximum number of steps (default: 500000)')
 parser.add_argument('--hidden_size', type=int, default=256, metavar='N',
                     help='hidden size (default: 256)')
 parser.add_argument('--updates_per_step', type=int, default=1, metavar='N',
@@ -61,8 +62,8 @@ np.random.seed(args.seed)    # the st seed, the same number of seed, the random 
 agent = SAC(env.observation_space.shape[0], env.action_space, args)
 
 #Tesnorboard "{}" inside is the value behind
-writer = SummaryWriter('runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
-                                                             args.policy, "autotune" if args.automatic_entropy_tuning else ""))
+writer = SummaryWriter('runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                                                     args.env_name,args.policy, "autotune" if args.automatic_entropy_tuning else ""))
 
 # Memory
 memory = ReplayMemory(args.replay_size, args.seed)
@@ -70,7 +71,7 @@ memory = ReplayMemory(args.replay_size, args.seed)
 # Training Loop
 total_numsteps = 0
 updates = 0
-ll = 20
+ll = 50
 success_list = deque([], maxlen=ll)
 
 for i_episode in range(10000):
@@ -98,6 +99,7 @@ for i_episode in range(10000):
                 writer.add_scalar('loss/policy', policy_loss, updates)
                 writer.add_scalar('loss/entropy_loss', ent_loss, updates)
                 writer.add_scalar('entropy_temprature/alpha', alpha, updates)
+                writer.add_scalar('success_rate', success_rate, updates)
                 updates += 1
 
         next_state, reward, done, _ = env.step(action) # Step
@@ -112,7 +114,7 @@ for i_episode in range(10000):
 
         state = next_state
     
-    is_success = 1 if reward==10000 else 0
+    is_success = 1 if reward==100 else 0
     success_list.append(is_success)
     success_rate = sum(success_list)/ll
     
@@ -126,7 +128,7 @@ for i_episode in range(10000):
         print("Episode: {}, success rate: {}, episode steps: {}, reward: {}".format(i_episode, success_rate, episode_steps, round(episode_reward, 2)))
 
     if i_episode%50==0 and success_rate>0.3 or i_episode%500==0:    # i_episode > 1000 and i_episode%200==0:
-        agent.save_model(args.env_name, suffix='certaininitpos_lr_'+str(args.lr)+'_ep'+str(i_episode)+'_sr'+str(success_rate))
+        agent.save_model(args.env_name, suffix='rfrwd_lr_'+str(args.lr)+'_ep'+str(i_episode)+'_sr'+str(success_rate))
 
 env.close()
 

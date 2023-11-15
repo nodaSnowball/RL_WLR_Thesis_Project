@@ -4,6 +4,7 @@ from gym import utils
 from gym.envs.mujoco import mujoco_env
 import os
 import random 
+import math
 from scipy.spatial.transform import Rotation
 #import register
 
@@ -17,10 +18,9 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     # 初始化环境参数
     def __init__(
         self,
-        xml_file=os.path.join(os.path.join(os.path.dirname(__file__),
-                                'asset', "Legged_wheel3.xml")),
+        xml_file=os.path.join(os.path.dirname(__file__), 'asset', "Legged_wheel3.xml"),
         ctrl_cost_weight=0.0001,
-        healthy_reward=1,
+        healthy_reward=0.5,
         healthy_z_range=0.05,
         reset_noise_scale=0.1,
     ):
@@ -99,9 +99,9 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # health reward: maintain standing pose
         # control cost: acceleration of motors
         # cost = ctrl_cost
-        punishment = 0
+        punishment = 0      # 0.5*abs(self.obs[-2])
         
-        approaching_reward = 500*approch_distance # if forward_check>0 else 0 # -5*abs(d_before-d_after)
+        approaching_reward = 200*approch_distance # if forward_check>0 else 0 # -5*abs(d_before-d_after)
 
         done = self.done
         reward =  approaching_reward + self.healthy_reward - punishment # - cost
@@ -110,10 +110,10 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         if done == False:
             if d_after < 1:
                 done = True
-                reward = 10000
-        else:
-            # if self.c_step < 100:
-            reward -= 500
+                reward = 100
+        # else:
+        #     # if self.c_step < 100:
+        #     reward -= 500
         
         info = {}
         # print(reward)
@@ -122,7 +122,7 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     # 获取当前状态的观察值
     def _get_obs(self):
         '''
-        STATE INDEX
+        STATE INDEX (no preprocess)
         sensor data from base imu
         sensor: length = 24
             IDX    |DATA
@@ -135,12 +135,31 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             15-17  |base local linear velocity
             18-20  |base local linear acceleration
             21-23  |base local angular velocity
+            (preprocess part)
+            24     |Orientation diff to target
+            25     |Distance to target
         '''
-        # position = self.sim.data.qpos.flat.copy() #身体部位
-        # velocity = self.sim.data.qvel.flat.copy() #速度
-        
         # sensor data
         self.obs = np.array(self.sim.data.sensordata) 
+        qpos = np.array(self.sim.data.qpos.flat.copy())
+        self.obs[:8] = qpos[:8]
+        
+        # preprocess
+        diff = self.obs[0:2]-self.obs[2:4]
+        twd_target = math.atan2(diff[1],diff[0])
+        if self.obs[5:9].all() == 0:
+            base_ori_z = 0
+        else:
+            base_ori_z = Rotation.from_quat(self.obs[5:9]).as_euler('xyz')
+            base_ori_z = base_ori_z[2]
+        base_ori_z+=2*np.pi if base_ori_z < 0 else 0
+        twd_target+=2*np.pi if twd_target < 0 else 0
+        angle_diff =  twd_target - base_ori_z
+        angle_diff-=2*np.pi if angle_diff>np.pi else 0
+        angle_diff+=2*np.pi if angle_diff<-np.pi else 0
+        # degree = 180*angle_diff/np.pi # for debugging
+        self.obs = np.append(self.obs, angle_diff)
+        self.obs = np.append(self.obs, (diff[0]**2+diff[1]**2)**0.5)
 
         # return self.obs
 
