@@ -11,7 +11,7 @@ import envs.register
 from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env-name', default="Biped-v0",
+parser.add_argument('--env-name', default="Jump-v0",
                     help='Mujoco Gym environment (default: Biped-v0)')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')
@@ -22,7 +22,7 @@ parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor for reward (default: 0.99)')
 parser.add_argument('--tau', type=float, default=0.001, metavar='G',
                     help='target smoothing coefficient(τ) (default: 0.005)')
-parser.add_argument('--lr', type=float, default=0.001, metavar='G',
+parser.add_argument('--lr', type=float, default=5e-4, metavar='G',
                     help='learning rate (default: 0.0003)')
 parser.add_argument('--alpha', type=float, default=0.2, metavar='G',
                     help='Temperature parameter α determines the relative importance of the entropy\
@@ -114,7 +114,7 @@ for i_episode in range(10000):
 
         state = next_state
     
-    is_success = 1 if reward==100 else 0
+    is_success = 1 if reward==1000 else 0
     success_list.append(is_success)
     success_rate = sum(success_list)/ll
     
@@ -127,8 +127,8 @@ for i_episode in range(10000):
     elif i_episode>=500:
         print("Episode: {}, success rate: {}, episode steps: {}, reward: {}".format(i_episode, success_rate, episode_steps, round(episode_reward, 2)))
 
-    if i_episode%50==0 and success_rate>0.3 or i_episode%500==0:    # i_episode > 1000 and i_episode%200==0:
-        agent.save_model(args.env_name, suffix='rfrwd_lr_'+str(args.lr)+'_ep'+str(i_episode)+'_sr'+str(success_rate))
+    if (i_episode%50==0 and success_rate>0.3) or i_episode%500==0:    # i_episode > 1000 and i_episode%200==0:
+        agent.save_model(args.env_name, suffix='jump_lr_'+str(args.lr)+'_ep'+str(i_episode)+'_sr'+str(success_rate))
 
 env.close()
 

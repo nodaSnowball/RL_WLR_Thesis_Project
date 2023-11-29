@@ -67,12 +67,6 @@
       <camera name="track" mode="trackcom" fovy="45" pos="-3 -3 0.35" xyaxes="0.5 -0.5 0 0 0 1"/>
       <inertial pos="0.018885 0.00062964 0.06018" quat="-0.064773 0.618315 0.0968439 0.777246" mass="4.6733" diaginertia="0.054592 0.0348635 0.0323885"/>
       <joint name="floating_base" type="free" limited="false" frictionloss="0.001" damping="0.01" armature="0."/>
-<!--      <joint name="floating_base_xslide" type="slide" axis="1 0 0" limited="false" frictionloss="0.001" damping="0.01" armature="0.00"/>-->
-<!--      <joint name="floating_base_yslide" type="slide" axis="0 1 0" limited="false" frictionloss="0.001" damping="0.01" armature="0.00"/>-->
-<!--      <joint name="floating_base_zslide" type="slide" axis="0 0 1" limited="false" frictionloss="0.001" damping="0.01" armature="0.00"/>-->
-<!--      <joint name="floating_base_xhinge" axis="1 0 0" limited="false" frictionloss="0.0001" damping="0.01" armature="0.00"/>-->
-<!--      <joint name="floating_base_yhinge" axis="0 1 0" limited="false" frictionloss="0.001" damping="0.01" armature="0.00"/>-->
-<!--      <joint name="floating_base_zhinge" axis="0 0 1" limited="false" frictionloss="0.001" damping="0.01" armature="0.00"/>-->
 
       <geom name="base1" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0 0 1" mesh="base_link"/>
       <geom name="base2" size="0.17 0.077 0.07" pos="0.02 0 0.06" type="box" rgba="0.75294 0 0 0.000987654321"/>

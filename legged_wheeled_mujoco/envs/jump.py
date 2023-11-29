@@ -13,14 +13,14 @@ DEFAULT_CAMERA_CONFIG = {
 }
 
 # 定义一个仿真环境
-class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
+class JumpEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     # 初始化环境参数
     def __init__(
         self,
-        xml_file=os.path.join(os.path.dirname(__file__), 'asset', "Legged_wheel3.xml"),
+        xml_file=os.path.join(os.path.dirname(__file__), 'asset', "Legged_wheel_jump.xml"),
         ctrl_cost_weight=0.0001,
-        healthy_reward=0.5,
+        healthy_reward=1,
         healthy_z_range=0.05,
         reset_noise_scale=0.1,
     ):
@@ -76,7 +76,7 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # target pos
         target_pos = [self.obs[0], self.obs[1]]
         # robot pos
-        rob_pos = self.obs[2:4]
+        rob_pos = self.obs[3:5]
         xy_distance = target_pos - rob_pos
         distance = (xy_distance[0]**2 + xy_distance[1]**2)**0.5
         return distance
@@ -101,14 +101,14 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # cost = ctrl_cost
         punishment = 0      # 0.5*abs(self.obs[-2])
         
-        approaching_reward = 200*approch_distance # if forward_check>0 else 0 # -5*abs(d_before-d_after)
+        approaching_reward = 100*approch_distance # if forward_check>0 else 0 # -5*abs(d_before-d_after)
 
         done = self.done
         reward =  approaching_reward + self.healthy_reward - punishment # - cost
 
         # 判断是否到达终点
         if done == False:
-            if d_after < 1:
+            if d_after < 0.3:
                 done = True
                 reward = 1000
         # else:
@@ -126,31 +126,25 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         sensor data from base imu
         sensor: length = 24
             IDX    |DATA
-            0-1    |target x,y
-            2-4    |base pos x,y,z
-            5-8    |base ori quat
-            9/11   |left/right hip joint pos in radius
-            10/12  |left/right knee joint pos in radius
-            13/14  |left/right wheel velocity
-            15-17  |base local linear velocity
-            18-20  |base local linear acceleration
-            21-23  |base local angular velocity
-            (preprocess part)
-            24     |Orientation diff to target
-            25     |Distance to target
+            0-2    |target x,y,z
+            3-5    |base pos x,y,z
+            6-9    |base ori quat
+            10/12  |left/right hip joint pos in radius
+            11/13  |left/right knee joint pos in radius
+            14/15  |distance and orientatiion diff
         '''
         # sensor data
-        self.obs = np.array(self.sim.data.sensordata) 
+        # self.obs = np.array(self.sim.data.sensordata) 
         qpos = np.array(self.sim.data.qpos.flat.copy())
-        self.obs[:8] = qpos[:8]
+        self.obs = qpos
         
         # preprocess
-        diff = self.obs[0:2]-self.obs[2:4]
+        diff = self.obs[0:2]-self.obs[3:5]
         twd_target = math.atan2(diff[1],diff[0])
-        if self.obs[5:9].all() == 0:
+        if self.obs[6:10].all() == 0:
             base_ori_z = 0
         else:
-            base_ori_z = Rotation.from_quat(self.obs[5:9]).as_euler('xyz')
+            base_ori_z = Rotation.from_quat(self.obs[6:10]).as_euler('xyz')
             base_ori_z = base_ori_z[2]
         base_ori_z+=2*np.pi if base_ori_z < 0 else 0
         twd_target+=2*np.pi if twd_target < 0 else 0
@@ -170,15 +164,18 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         qpos = self.init_qpos
         qvel = self.init_qvel
         # reset target
-        qpos[0] = 20*random.random()-10
-        qpos[1] = 20*random.random()-10
+        # qpos[0] = 20*random.random()-10
+        # qpos[1] = 20*random.random()-10
+        qpos[0] = 1.2
+        qpos[1] = 0
+        qpos[2] = 0.08
         # reset inital robot position
-        qpos[2] = 20*random.random()-10 if random_pos else 0
         qpos[3] = 20*random.random()-10 if random_pos else 0
+        qpos[4] = 20*random.random()-10 if random_pos else 0
         # qpos[5:9] = Rotation.from_euler('zyx',[0, 0, 2*np.pi*random.random()]).as_quat()
-        while ((qpos[0]-qpos[2])**2+(qpos[1]-qpos[3])**2)**0.5<1:
-            qpos[0] = 20*random.random()-10
-            qpos[1] = 20*random.random()-10
+        # while ((qpos[0]-qpos[2])**2+(qpos[1]-qpos[3])**2)**0.5<1:
+        #     qpos[0] = 20*random.random()-10
+        #     qpos[1] = 20*random.random()-10
             
         self.set_state(qpos, qvel)
         self._get_obs()

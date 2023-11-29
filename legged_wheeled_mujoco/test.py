@@ -13,7 +13,7 @@ from replay_memory import ReplayMemory
 import envs.register
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env-name', default="Biped-v0",
+parser.add_argument('--env-name', default="Jump-v0",
                     help='Mujoco Gym environment (default: Biped-v0)')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')
@@ -54,7 +54,7 @@ args = parser.parse_args()
 env = gym.make(args.env_name)
 agent = SAC(env.observation_space.shape[0], env.action_space, args)
 
-agent.load_model('./models/sac_actor_Biped-v0_certaininitpos_lr_0.001_ep4300_sr0.82', './models/sac_critic_Biped-v0_certaininitpos_lr_0.001_ep4300_sr0.82')
+agent.load_model('./models/sac_actor_Jump-v0_jump_lr_0.0005_ep9000_sr0.0', './models/sac_critic_Jump-v0_jump_lr_0.0005_ep9000_sr0.0')
 
 success = 0
 avg = 0.0
@@ -76,7 +76,7 @@ def testSAC():
             state = nextState
             if done:
                 print("Episode %d ended in %d steps" % (i + 1, t + 1))
-                if reward == 100:
+                if reward == 1000:
                     success += 1
                 res.append(ret)
                 # print('Return is',ret)
