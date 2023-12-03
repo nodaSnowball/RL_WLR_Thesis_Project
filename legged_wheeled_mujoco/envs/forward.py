@@ -13,7 +13,7 @@ DEFAULT_CAMERA_CONFIG = {
 }
 
 # 定义一个仿真环境
-class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
+class ForwardEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     # 初始化环境参数
     def __init__(
@@ -101,7 +101,7 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         if done == False:
             if d_after < 1:
                 done = True
-                reward = 1000
+                reward = 100
         
         info = {}
         # print(reward)

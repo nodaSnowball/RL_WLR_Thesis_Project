@@ -11,8 +11,8 @@ import envs.register
 from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env-name', default="Biped-v0",
-                    help='Mujoco Gym environment (default: Biped-v0)')
+parser.add_argument('--env-name', default="Forward-v0",
+                    help='Mujoco Gym environment (default: Forward-v0)')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')
 parser.add_argument('--suffix', default='', type=str)
@@ -35,7 +35,7 @@ parser.add_argument('--batch_size', type=int, default=256, metavar='N',
                     help='batch size (default: 256)')
 parser.add_argument('--num_steps', type=int, default=10000001, metavar='N',
                     help='maximum number of steps (default: 500000)')
-parser.add_argument('--hidden_size', type=int, default=256, metavar='N',
+parser.add_argument('--hidden_size', type=int, default=128, metavar='N',
                     help='hidden size (default: 256)')
 parser.add_argument('--updates_per_step', type=int, default=1, metavar='N',
                     help='model updates per simulator step (default: 1)')
@@ -85,8 +85,7 @@ for i_episode in range(10000):
             action = env.action_space.sample()  # Sample random action
         else:
             action = agent.select_action(state)  # Sample action from policy
-        # if total_numsteps>1e4:
-        # env.render()
+        env.render()
 
         if len(memory) > args.batch_size:
             # Number of updates per step in environment
@@ -114,7 +113,7 @@ for i_episode in range(10000):
 
         state = next_state
     
-    is_success = 1 if reward==1000 else 0
+    is_success = 1 if reward==100 else 0
     success_list.append(is_success)
     success_rate = sum(success_list)/ll
     
@@ -122,11 +121,11 @@ for i_episode in range(10000):
         break
 
     writer.add_scalar('reward/train', episode_reward, i_episode)
-    if i_episode<500 and i_episode % 10 == 0:
+    if i_episode % 50 == 0:
         print("Episode: {}, success rate: {}, episode steps: {}, reward: {}".format(i_episode, success_rate, episode_steps, round(episode_reward, 2)))
 
     if (i_episode%50==0 and success_rate>0.5) or i_episode%500==0:    # i_episode > 1000 and i_episode%200==0:
-        agent.save_model(args.env_name, suffix='nopreproc_lr_'+str(args.lr)+'_ep'+str(i_episode)+'_sr'+str(success_rate))
+        agent.save_model(args.env_name, suffix='lr_'+str(args.lr)+'_ep'+str(i_episode)+'_sr'+str(success_rate))
 
 env.close()
 

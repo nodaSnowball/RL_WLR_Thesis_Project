@@ -31,6 +31,7 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self._healthy_z_range = healthy_z_range
         self._reset_noise_scale = reset_noise_scale
         self.c_step = 0
+        self.re = 0.1
         self.obs = None
 
         mujoco_env.MujocoEnv.__init__(self, xml_file, 5)
@@ -104,13 +105,13 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         approaching_reward = 200*approch_distance # if forward_check>0 else 0 # -5*abs(d_before-d_after)
 
         done = self.done
-        reward =  approaching_reward + self.healthy_reward - punishment # - cost
+        reward =  self.re * (approaching_reward + self.healthy_reward - punishment) # - cost
 
         # 判断是否到达终点
         if done == False:
             if d_after < 1:
                 done = True
-                reward = 1000
+                reward = self.re * 1000
         # else:
         #     # if self.c_step < 100:
         #     reward -= 500
