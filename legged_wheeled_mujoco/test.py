@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import math
-import gym
+import gymnasium as gym
 import torch
 import os
 import torch.nn as nn
@@ -15,7 +15,7 @@ import envs.register
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
 parser.add_argument('--env-name', default="Biped-v0",
-                    help='Mujoco Gym environment (default: Biped-v0)')
+                    help='Mujoco Gym environment (default: Forward-v0)')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')
 parser.add_argument('--eval', type=bool, default=True,
@@ -37,7 +37,7 @@ parser.add_argument('--batch_size', type=int, default=256, metavar='N',
                     help='batch size (default: 256)')
 parser.add_argument('--num_steps', type=int, default=1000001, metavar='N',
                     help='maximum number of steps (default: 1000000)')
-parser.add_argument('--hidden_size', type=int, default=256, metavar='N',
+parser.add_argument('--hidden_size', type=int, default=None, metavar='N',
                     help='hidden size (default: 256)')
 parser.add_argument('--updates_per_step', type=int, default=1, metavar='N',
                     help='model updates per simulator step (default: 1)')
@@ -55,8 +55,13 @@ args = parser.parse_args()
 env = gym.make(args.env_name)
 agent = SAC(env.observation_space.shape[0], env.action_space, args)
 
-actor = os.path.join(os.path.dirname(__file__),'models/biped_nopreproc/sac_actor_Biped-v0_nopreproc_lr_0.0005_ep7350_sr0.9')
-critic = os.path.join(os.path.dirname(__file__),'models/biped_nopreproc/sac_critic_Biped-v0_nopreproc_lr_0.0005_ep7350_sr0.9')
+'''
+models/forward/sac_actor_Forward-v0_lr_0.0005_ep1200_sr1.0
+models/biped/sac_actor_Biped-v0_nopreproc_lr_0.0005_ep7300_sr0.9
+'''
+
+actor = os.path.join(os.path.dirname(__file__),'models/biped/sac_actor_Biped-v0_nopreproc_lr_0.0005_ep7300_sr0.9')
+critic = os.path.join(os.path.dirname(__file__),'models/biped/sac_critic_Biped-v0_nopreproc_lr_0.0005_ep7300_sr0.9')
 agent.load_model(actor, critic)
 
 success = 0
@@ -69,11 +74,13 @@ def testSAC():
     num_test = 100
     for i in range(num_test):
         state = env.reset() # state size: 27
+        
         ret = 0.0
         for t in count():
-            # env.render()
+            env.render()
             action = agent.select_action(state, evaluate=True)
-
+            print(action)
+            print(f'Local linear velocity: {state[6:9]}\nLocal orientation velocity: {state[12:]}')
             nextState, reward, done, _ = env.step(action)
             ret += reward
             state = nextState

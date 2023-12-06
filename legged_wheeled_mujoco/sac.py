@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 from torch.optim import Adam
 from utils import soft_update, hard_update
-from model import GaussianPolicy, QNetwork, DeterministicPolicy
+from model import *
 
 
 class SAC(object):
@@ -32,7 +32,10 @@ class SAC(object):
                 self.log_alpha = torch.zeros(1, requires_grad=True, device=self.device)
                 self.alpha_optim = Adam([self.log_alpha], lr=args.lr)
 
-            self.policy = GaussianPolicy(num_inputs, action_space.shape[0], args.hidden_size, action_space).to(self.device)
+            if args.env_name == 'Biped-v0':
+                self.policy = GaussianPolicy(num_inputs, action_space.shape[0], args.hidden_size, action_space).to(self.device)
+            elif args.env_name == 'Forward-v0':
+                self.policy = GaussianPolicyForward(num_inputs, action_space.shape[0], args.hidden_size, action_space).to(self.device)
             self.policy_optim = Adam(self.policy.parameters(), lr=args.lr)
 
         else:

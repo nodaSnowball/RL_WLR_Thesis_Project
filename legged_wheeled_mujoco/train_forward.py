@@ -12,7 +12,7 @@ from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
 parser.add_argument('--env-name', default="Forward-v0",
-                    help='Mujoco Gym environment (default: Forward-v0)')
+                    help='Mujoco Gym environment (default: Biped-v0)')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')
 parser.add_argument('--suffix', default='', type=str)
@@ -71,6 +71,7 @@ memory = ReplayMemory(args.replay_size, args.seed)
 # Training Loop
 total_numsteps = 0
 updates = 0
+c_log = 0
 ll = 50
 success_list = deque([], maxlen=ll)
 
@@ -89,17 +90,19 @@ for i_episode in range(10000):
 
         if len(memory) > args.batch_size:
             # Number of updates per step in environment
+            c_log += 1 
             for i in range(args.updates_per_step):
                 # Update parameters of all the networks
                 critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, args.batch_size, updates)
 
-                writer.add_scalar('loss/critic_1', critic_1_loss, updates)
-                writer.add_scalar('loss/critic_2', critic_2_loss, updates)
-                writer.add_scalar('loss/policy', policy_loss, updates)
-                writer.add_scalar('loss/entropy_loss', ent_loss, updates)
-                writer.add_scalar('entropy_temprature/alpha', alpha, updates)
-                writer.add_scalar('success_rate', success_rate, updates)
-                updates += 1
+                if c_log%5 == 0:
+                    writer.add_scalar('loss/critic_1', critic_1_loss, updates)
+                    writer.add_scalar('loss/critic_2', critic_2_loss, updates)
+                    writer.add_scalar('loss/policy', policy_loss, updates)
+                    writer.add_scalar('loss/entropy_loss', ent_loss, updates)
+                    writer.add_scalar('entropy_temprature/alpha', alpha, updates)
+                    writer.add_scalar('success_rate', success_rate, updates)
+                    updates += 1
 
         next_state, reward, done, _ = env.step(action) # Step
         episode_steps += 1
@@ -121,7 +124,7 @@ for i_episode in range(10000):
         break
 
     writer.add_scalar('reward/train', episode_reward, i_episode)
-    if i_episode % 50 == 0:
+    if i_episode % 50 == 0 and i_episode>500:
         print("Episode: {}, success rate: {}, episode steps: {}, reward: {}".format(i_episode, success_rate, episode_steps, round(episode_reward, 2)))
 
     if (i_episode%50==0 and success_rate>0.5) or i_episode%500==0:    # i_episode > 1000 and i_episode%200==0:

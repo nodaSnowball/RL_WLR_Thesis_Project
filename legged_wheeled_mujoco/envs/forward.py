@@ -18,9 +18,9 @@ class ForwardEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     # 初始化环境参数
     def __init__(
         self,
-        xml_file=os.path.join(os.path.dirname(__file__), 'asset', "Legged_wheel3.xml"),
+        xml_file=os.path.join(os.path.dirname(__file__), 'asset', "Legged_wheel_forward.xml"),
         ctrl_cost_weight=0.0001,
-        healthy_reward=0.5,
+        healthy_reward=0.1,
         healthy_z_range=0.05,
         reset_noise_scale=0.1,
     ):
@@ -33,7 +33,7 @@ class ForwardEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.c_step = 0
         self.obs = None
 
-        mujoco_env.MujocoEnv.__init__(self, xml_file, 5)
+        mujoco_env.MujocoEnv.__init__(self, xml_file, 10)   # 50Hz = 1/(0.02*10)
         # self.end_x = self.sim.model.get_joint_qpos_addr('end')
 
     @property # 计算健康奖励
@@ -71,37 +71,41 @@ class ForwardEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                               'right_thigh1', 'right_thigh2', 'right_thigh3']):
                 return True
         return False
-    
-    def get_xydistance(self)->float:
-        qpos = np.array(self.sim.data.qpos.flat.copy())
-        # target pos
-        target_pos = [qpos[0], qpos[1]]
-        # robot pos
-        rob_pos = qpos[2:4]
-        xy_distance = target_pos - rob_pos
-        distance = (xy_distance[0]**2 + xy_distance[1]**2)**0.5
-        return distance
-    
+
     # 执行仿真中的一步
     def step(self, action):
         # calculate approaching distance
         self.c_step+=1
         self._get_obs()
-        d_before = self.get_xydistance()
+        qpos1 = np.array(self.sim.data.qpos.flat.copy())
+        xy1 = qpos1[:2]
         self.do_simulation(action, self.frame_skip)
         self._get_obs()
-        d_after = self.get_xydistance()
-        approch_distance = d_before-d_after
-        approaching_reward = 200*approch_distance
+        qpos2 = np.array(self.sim.data.qpos.flat.copy())
+        xy2 = qpos2[:2]
+        approch_distance = sum((xy1-xy2)**2)**0.5
+        m = 0.5 * (action[2]+action[5])
+        approaching_effcient = 0 if m<0 else (1-abs(1-m/40))**2     # according to speed
+        approaching_reward = 100*approch_distance*approaching_effcient
+        
+        ori_diff = 0
+        if qpos1[3:7].all() == True:
+            ori1 = Rotation.from_quat(qpos1[3:7]).as_euler('zyx')
+            ori2 = Rotation.from_quat(qpos2[3:7]).as_euler('zyx')
+            ori_diff = abs(ori1[2]-ori2[2])
+        
+        
+        off_track_punish = 10 * ori_diff   # y coordinate
+        punish = off_track_punish
 
         done = self.done
-        reward =  approaching_reward + self.healthy_reward
+        reward =  approaching_reward + self.healthy_reward - punish 
 
         # 判断是否到达终点
         if done == False:
-            if d_after < 1:
+            if sum(xy2**2) > 100:
                 done = True
-                reward = 100
+                reward = 10
         
         info = {}
         # print(reward)
@@ -112,38 +116,36 @@ class ForwardEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         STATE INDEX (no preprocess)
         sensor data from base imu
-        sensor: length = 15
+        sensor: length = 22
             IDX    |DATA
-            # 0-1    |target x,y
-            # 2-4    |base pos x,y,z
-            # 5-8    |base ori quat
-            0/2    |left/right hip joint pos in radius
-            1/3    |left/right knee joint pos in radius
-            4/5    |left/right wheel velocity
-            6-8    |base local linear velocity
-            9-11   |base local linear acceleration
-            12-14  |base local angular velocity
-            (preprocess part)
-            # 24     |Orientation diff to target
-            # 25     |Distance to target
+            0-2    |base pos x,y,z
+            3-6    |base ori quat
+            7/9    |left/right hip joint pos in radius
+            8/10   |left/right knee joint pos in radius
+            11/12  |left/right wheel velocity
+            13-15  |base local linear velocity
+            16-18  |base local linear acceleration
+            19-21  |base local angular velocity
         '''
         # sensor data
         self.obs = np.array(self.sim.data.sensordata) 
+        qpos = np.array(self.sim.data.qpos.flat.copy())
+        self.obs[:7] = qpos[:7]
+        # self.obs
 
     # 重置模型
     def reset_model(self):
         self.c_step = 0
         qpos = self.init_qpos
         qvel = self.init_qvel
-        # reset target
-        qpos[0] = 10
-        qpos[1] = 0
+
         # reset inital robot position
-        qpos[2] = 0
-        qpos[3] = 0
+        qpos[:7] = [0,0,0.25,1,0,0,0]
+        qpos[3:7] = Rotation.from_euler('zyx',[0,0,2*np.pi*random.random()]).as_quat()
             
         self.set_state(qpos, qvel)
         self._get_obs()
+        
         return self.obs
 
     # 可视化查看器
