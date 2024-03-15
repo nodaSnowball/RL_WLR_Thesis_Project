@@ -41,24 +41,10 @@
     <light pos="0.5 -.4 1.0" dir="1 2 -1.5" diffuse=".6 .6 .6"/>
     <camera name="top" pos=".0 .0 25." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
     <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid" conaffinity='0' solref='0 -1000'/>
-
-    <!-- <geom name="box2" pos="-2 1 0.18" size="0.8 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
-    <geom name="box3" pos="-3.3 1.5 0.18" size="0.5 0.5 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 0 0" conaffinity="0"/>
-    <geom name="box3r" pos="-3.4 0.5 0.15" size="0.6 0.5 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 -0.05 0" conaffinity="0"/>
-    <geom name="box4" pos="-4.4 1.5 0.18" size="0.6 0.5 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
-    <geom name="box4r" pos="-4.8 0.5 0.16" size="0.8 0.5 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 0.05 0" conaffinity="0"/>
-    <geom name="box5" pos="-5.7 1.5 0.14" size="0.7 0.5 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 -0.05 -0" conaffinity="0"/>
-    <geom name="box5r" pos="-6.2 0.5 0.2" size="0.6 0.5 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
-    <geom name="box6" pos="-7.1 1.5 0.14" size="0.7 0.5 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 0.05 0" conaffinity="0"/>
-    <geom name="box6r" pos="-7.3 0.5 0.19" size="0.5 0.5 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 -0.02 0" conaffinity="0"/>
-    <geom name="box7" pos="-8.8 1 0.18" size="1 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
-    <geom name="box8r" pos="-0.51 1.0 0.32" size="0.7 1.0 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 -0.2 0" conaffinity="0"/>
-    <geom name="box9" pos="0.671 1.0 0.458" size="0.5 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
-    <geom name="box9r" pos="1.85 1.0 0.32" size="0.7 1.0 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 0.2 0" conaffinity="0"/>
-    <geom name="box10" pos="3.04 1.0 0.18" size="0.5 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/> -->
     <!-- <body name='end_ref' pos='.0 .0 .0'>
       <joint name='end_x' type='slide' axis='1 0 0' limited='true' range='-20 20' />
       <joint name='end_y' type='slide' axis='0 1 0' limited='true' range='-20 20' />
+      <joint />
       <geom name="end" type="cylinder" pos="-0 -0 .0" size="0.2 0.01 0" rgba="0. 0.8 0. 1" contype='0' conaffinity="0"/>
     </body> -->
     

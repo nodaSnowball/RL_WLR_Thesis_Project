@@ -4,7 +4,7 @@
   <size njmax="10000" nconmax="10000"/>
   <default>
     <geom contype="1" conaffinity="1" rgba="0.5 0.6 0.7 1" margin="0.001" group="0"/>
-    <motor gear="20" ctrllimited="true" ctrlrange="-100 100" />
+    <motor gear="20" ctrllimited="true" ctrlrange="-80 80" />
     <position gear="10" ctrllimited="true" kp="5"/>
     <joint limited="true" frictionloss="0.5" damping="45" armature="0.1"/>
   </default>
@@ -38,8 +38,8 @@
 
   <worldbody>
     <light directional="true" diffuse=".8 .8 .8" pos="0 0 10" dir="0 0 -10"/>
-    <light pos="0.5 -.4 1." dir="1 2 -1.5" diffuse=".6 .6 .6"/>
-    <camera name="top" pos="0. 0. 25." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
+    <light pos="0.5 -.4 1.0" dir="1 2 -1.5" diffuse=".6 .6 .6"/>
+    <camera name="top" pos=".0 .0 25." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
     <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid" conaffinity='0' solref='0 -1000'/>
 
     <!-- <geom name="box2" pos="-2 1 0.18" size="0.8 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
@@ -56,17 +56,18 @@
     <geom name="box9" pos="0.671 1.0 0.458" size="0.5 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
     <geom name="box9r" pos="1.85 1.0 0.32" size="0.7 1.0 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 0.2 0" conaffinity="0"/>
     <geom name="box10" pos="3.04 1.0 0.18" size="0.5 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/> -->
-    <body name='end_ref' pos='0 0 0'>
+    <!-- <body name='end_ref' pos='.0 .0 .0'>
       <joint name='end_x' type='slide' axis='1 0 0' limited='true' range='-20 20' />
       <joint name='end_y' type='slide' axis='0 1 0' limited='true' range='-20 20' />
+      <joint />
       <geom name="end" type="cylinder" pos="-0 -0 .0" size="0.2 0.01 0" rgba="0. 0.8 0. 1" contype='0' conaffinity="0"/>
-    </body>
-
+    </body> -->
+    
     <!-- ======= ROBOT ======= -->
-    <body name="base_link" pos="10. 10. 0.25" euler="0 0 0">
+    <body name="base_link" pos="0 0 0.25" euler="0 0 0">
       <camera name="track" mode="trackcom" fovy="45" pos="-3 -3 0.35" xyaxes="0.5 -0.5 0 0 0 1"/>
       <inertial pos="0.018885 0.00062964 0.06018" quat="-0.064773 0.618315 0.0968439 0.777246" mass="4.6733" diaginertia="0.054592 0.0348635 0.0323885"/>
-      <joint name="floating_base" type="free" limited="false" frictionloss="0.001" damping="0.01" armature="0."/>
+      <joint name="floating_base" type="free" limited="false" frictionloss="0.001" damping="0.01" armature="0.0"/>
 
       <geom name="base1" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0 0 1" mesh="base_link"/>
       <geom name="base2" size="0.17 0.077 0.07" pos="0.02 0 0.06" type="box" rgba="0.75294 0 0 0.000987654321"/>
@@ -116,18 +117,16 @@
   <actuator>
     <position name="left_hip_motor" joint="left_hip" ctrlrange="-1.5 1.5" />
     <position name="left_knee_motor" joint="left_knee" ctrlrange="-1.5 1.5"/>
-    <!-- <velocity name="left_ankle_motor" joint="left_ankle" ctrllimited='true' forcelimited='true' ctrlrange="-10 10" forcerange='-80 80'/> -->
     <motor name="left_ankle_motor" joint="left_ankle"/>
     <position name="right_hip_motor" joint="right_hip" ctrlrange="-1.5 1.5" />
     <position name="right_knee_motor" joint="right_knee" ctrlrange="-1.5 1.5"/>
-    <!-- <velocity name="right_ankle_motor" joint="right_ankle" ctrllimited='true' forcelimited='true' ctrlrange="-10 10" forcerange='-80 80'/> -->
     <motor name="right_ankle_motor" joint="right_ankle"/>
   </actuator>
 
   <sensor>
     <!-- The sensor sequence cannot be changed -->
-    <jointpos name='target_x' joint='end_x' />
-    <jointpos name='target_y' joint='end_y' />
+    <!-- <jointpos name='target_x' joint='end_x' />
+    <jointpos name='target_y' joint='end_y' /> -->
     <framepos name='base_pos' objtype='body' objname='base_link' />
     <framequat name='base_ori' objtype='body' objname='base_link' />
     <jointpos name='left_hip_pos' joint='left_hip' />

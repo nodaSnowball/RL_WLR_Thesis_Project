@@ -13,14 +13,14 @@ DEFAULT_CAMERA_CONFIG = {
 }
 
 # 定义一个仿真环境
-class ForwardEnv(mujoco_env.MujocoEnv, utils.EzPickle):
+class StopEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     # 初始化环境参数
     def __init__(
         self,
         xml_file=os.path.join(os.path.dirname(__file__), 'asset', "Legged_wheel_forward.xml"),
         ctrl_cost_weight=0.0001,
-        healthy_reward=0.2,
+        healthy_reward=1,
         healthy_z_range=0.13,
         reset_noise_scale=0.1,
     ):
@@ -39,10 +39,7 @@ class ForwardEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     @property # 计算健康奖励
     def healthy_reward(self):
-        if self.c_step<500:
-            return float(self.is_healthy) * self._healthy_reward
-        else:
-            return 0
+        return float(self.is_healthy) * self._healthy_reward
 
     # 计算控制成本
     def control_cost(self, action):
@@ -72,8 +69,8 @@ class ForwardEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                               'right_thigh1', 'right_thigh2', 'right_thigh3']):
                 return True
         return False
-
-    # open loop
+    
+    # close loop
     def step(self, action):
         # calculate approaching distance
         reward = 0
@@ -91,72 +88,15 @@ class ForwardEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         if qpos1[3:7].all() == True:
             xy1 = qpos1[:2]
             xy2 = qpos2[:2]
-            # ori_target = Rotation.from_quat(self.target[2:]).as_euler('zyx')
-            # k = np.sin(ori_target[2]) if abs(ori_target[2])<np.pi/2 else -np.sin(ori_target[2])
-            # off_track_distance = abs(k*qpos2[0]-qpos2[1]+self.target[1]-k*self.target[0])**2/(1+k**2)
-            # angle_diff = (Rotation.from_quat(qpos2[3:7]).inv()*Rotation.from_quat(self.target[2:])).as_euler('zyx')[2]
-            # approch_distance = np.cos(angle_diff)*sum((xy1-xy2)**2)**0.5
+            displacement = sum((xy1-xy2)**2)
+            control_cost = sum(abs(self.obs[11:13]))**2
             
-            # off_track_punish =  0.1*off_track_distance   # y coordinate
-            diff_punish = abs(action[2]-action[5])
-            velocity_punish = (abs(action[2]-40) + abs(action[5]-40))/10**2
-            punish = diff_punish +velocity_punish
-            e = 200 if approch_distance>0.01 and approch_distance<0.015 else 100
-            approaching_reward = e*approch_distance
-            done = self.done
+            punish = 3000*displacement + 0.002 * control_cost
+            done = self.done 
         
-            reward =  approaching_reward + self.healthy_reward - punish 
-            # print(f'angle_efficient:{np.cos(angle_diff)}\nmoving distance: {approch_distance}\nreward: {reward}'+
-            #       f'\nz: {qpos2[2]}')
-
-            # 判断是否到达终点
-            # if done == False:
-            #     if sum(xy2**2) > 100 and off_track_distance<0.5:
-            #         done = True
-            #         reward = 10
+            reward =  self.healthy_reward - punish 
 
         return self.obs, reward, done, info
-    
-    # close loop
-    # def step(self, action):
-    #     # calculate approaching distance
-    #     reward = 0
-    #     done = False
-    #     info = {}
-    #     self.c_step+=1
-    #     self._get_obs()
-    #     qpos1 = np.array(self.sim.data.qpos.flat.copy())
-    #     self.do_simulation(action, self.frame_skip)
-    #     self._get_obs()
-    #     qpos2 = np.array(self.sim.data.qpos.flat.copy())  
-        
-    #     off_track_distance = 0
-    #     approch_distance = 0
-    #     if qpos1[3:7].all() == True:
-    #         xy1 = qpos1[:2]
-    #         xy2 = qpos2[:2]
-    #         ori_target = Rotation.from_quat(self.target[2:]).as_euler('zyx')
-    #         k = np.sin(ori_target[2]) if abs(ori_target[2])<np.pi/2 else -np.sin(ori_target[2])
-    #         off_track_distance = (k*qpos2[0]-qpos2[1]+self.target[1]-k*self.target[0])**2/(1+k**2)
-    #         displacement = xy1-xy2
-    #         dis_ori = Rotation.from_euler('zyx',[0,0,np.arctan2(displacement[1],displacement[0])])
-    #         angle_diff = (dis_ori.inv()*Rotation.from_quat(self.target[2:])).as_euler('zyx')
-    #         angle_diff = angle_diff[2]
-            
-    #         approch_distance = np.cos(angle_diff)*(sum(displacement**2)**0.5)
-            
-    #         off_track_punish =  off_track_distance   # y coordinate
-    #         # velocity_punish = (abs(action[2]-40) + abs(action[5]-40))/10**2
-    #         punish = off_track_punish
-    #         e = 200
-    #         approaching_reward = e*approch_distance
-    #         done = self.done
-        
-    #         reward =  approaching_reward + self.healthy_reward - punish 
-    #         # print(f'angle_efficient:{np.cos(angle_diff)}\nmoving distance: {approch_distance}\nreward: {reward}'+
-    #         #       f'\nz: {qpos2[2]}')
-
-    #     return self.obs, reward, done, info
 
     # 获取当前状态的观察值
     def _get_obs(self):

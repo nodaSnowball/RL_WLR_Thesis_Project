@@ -20,7 +20,7 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self,
         xml_file=os.path.join(os.path.dirname(__file__), 'asset', "Legged_wheel3.xml"),
         ctrl_cost_weight=0.0001,
-        healthy_reward=0.5,
+        healthy_reward=0.1,
         healthy_z_range=0.05,
         reset_noise_scale=0.1,
     ):
@@ -52,7 +52,7 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     @property  # 是否倾倒
     def is_healthy(self):
         min_z = self._healthy_z_range
-        is_healthy = (self.get_body_com("base_link")[2] > min_z) and (not self.bump_base())
+        is_healthy = (self.get_body_com("base_link")[2] > min_z) and (not self.bump_base()) 
         return is_healthy
 
     @property
@@ -84,17 +84,24 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     
     # 执行仿真中的一步
     def step(self, action):
+        info = {}
         self.c_step+=1
         self._get_obs()
         d_before = self.get_xydistance()
+        # t = action[2]
+        # r = action[5]
+        # action[2] = (t-r*.5)/1.5
+        # action[5] = (t+r*.5)/1.5
+        # action[5] = t
         self.do_simulation(action, self.frame_skip)
-        self._get_obs()
+        obs = self._get_obs()
         d_after = self.get_xydistance()
         
         # ctrl_cost = self.control_cost(action)  # 控制损失
         unstable_punishment = 0
         # if the robot is moving forward
         approch_distance = d_before-d_after
+        # print(approch_distance)
         forward_check = 0
         
         # health reward: maintain standing pose
@@ -102,7 +109,7 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # cost = ctrl_cost
         punishment = 0      # 0.5*abs(self.obs[-2])
         
-        approaching_reward = 200*approch_distance # if forward_check>0 else 0 # -5*abs(d_before-d_after)
+        approaching_reward = 100*approch_distance # if forward_check>0 else 0 # -5*abs(d_before-d_after)
 
         done = self.done
         reward =  self.re * (approaching_reward + self.healthy_reward - punishment) # - cost
@@ -111,14 +118,18 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         if done == False:
             if d_after < 1:
                 done = True
-                reward = self.re * 1000
-        # else:
-        #     # if self.c_step < 100:
-        #     reward -= 500
+                reward = self.re * 100
+                info.update({'is_success':True})
+            else:
+                if self.c_step==2000:
+                    info.update({'is_success':False})
+        else:
+            # if self.c_step < 100:
+            reward -= 10
+            info.update({'is_success':False})
         
-        info = {}
         # print(reward)
-        return self.obs, reward, done, info
+        return obs, reward, done, info
 
     # 获取当前状态的观察值
     def _get_obs(self):
@@ -136,33 +147,41 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             15-17  |base local linear velocity
             18-20  |base local linear acceleration
             21-23  |base local angular velocity
-            (preprocess part)
-            24     |Orientation diff to target
-            25     |Distance to target
         '''
         # sensor data
         self.obs = np.array(self.sim.data.sensordata) 
         qpos = np.array(self.sim.data.qpos.flat.copy())
+        qvel = np.array(self.sim.data.qvel.flat.copy())
         self.obs[:8] = qpos[:8]
+        obs = self.obs.copy()
+        
+        # normalization
+        obs[:2] /= 10      # target        xy
+        obs[2:4] /= 10     # robot         xy
+        # obs[5:9]           robot         z, quat ori
+        # obs[9:13]          hip, keen     qpos
+        obs[13:15] /= 30   # wheel         qvel
+        
+        
         
         # preprocess
-        diff = self.obs[0:2]-self.obs[2:4]
-        twd_target = math.atan2(diff[1],diff[0])
-        if self.obs[5:9].all() == 0:
-            base_ori_z = 0
-        else:
-            base_ori_z = Rotation.from_quat(self.obs[5:9]).as_euler('xyz')
-            base_ori_z = base_ori_z[2]
-        base_ori_z+=2*np.pi if base_ori_z < 0 else 0
-        twd_target+=2*np.pi if twd_target < 0 else 0
-        angle_diff =  twd_target - base_ori_z
-        angle_diff-=2*np.pi if angle_diff>np.pi else 0
-        angle_diff+=2*np.pi if angle_diff<-np.pi else 0
-        # degree = 180*angle_diff/np.pi # for debugging
-        self.obs = np.append(self.obs, angle_diff)
-        self.obs = np.append(self.obs, (diff[0]**2+diff[1]**2)**0.5)
+        # diff = self.obs[0:2]-self.obs[2:4]
+        # twd_target = math.atan2(diff[1],diff[0])
+        # if self.obs[5:9].all() == 0:
+        #     base_ori_z = 0
+        # else:
+        #     base_ori_z = Rotation.from_quat(self.obs[5:9]).as_euler('xyz')
+        #     base_ori_z = base_ori_z[2]
+        # base_ori_z+=2*np.pi if base_ori_z < 0 else 0
+        # twd_target+=2*np.pi if twd_target < 0 else 0
+        # angle_diff =  twd_target - base_ori_z
+        # angle_diff-=2*np.pi if angle_diff>np.pi else 0
+        # angle_diff+=2*np.pi if angle_diff<-np.pi else 0
+        # # degree = 180*angle_diff/np.pi # for debugging
+        # self.obs = np.append(self.obs, angle_diff)
+        # self.obs = np.append(self.obs, (diff[0]**2+diff[1]**2)**0.5)
 
-        # return self.obs
+        return obs
 
     # 重置模型
     def reset_model(self):
@@ -176,8 +195,8 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # reset inital robot position
         qpos[2] = 20*random.random()-10 if random_pos else 0
         qpos[3] = 20*random.random()-10 if random_pos else 0
-        # qpos[5:9] = Rotation.from_euler('zyx',[0, 0, 2*np.pi*random.random()]).as_quat()
-        while ((qpos[0]-qpos[2])**2+(qpos[1]-qpos[3])**2)**0.5<1:
+        qpos[5:9] = Rotation.from_euler('zyx',[0, 0, 2*np.pi*random.random()]).as_quat()
+        while ((qpos[0]-qpos[2])**2+(qpos[1]-qpos[3])**2)<1:
             qpos[0] = 20*random.random()-10
             qpos[1] = 20*random.random()-10
             

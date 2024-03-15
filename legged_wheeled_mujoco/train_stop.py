@@ -11,7 +11,7 @@ import envs.register
 from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env-name', default="Forward-v0",
+parser.add_argument('--env-name', default="Stop-v0",
                     help='Mujoco Gym environment (default: Biped-v0)')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')
@@ -73,7 +73,7 @@ total_numsteps = 0
 updates = 0
 c_log = 0
 ll = 50
-success_list = deque([], maxlen=ll)
+reward_list = deque([], maxlen=ll)
 
 for i_episode in range(10000):
     episode_reward = 0
@@ -101,7 +101,7 @@ for i_episode in range(10000):
                     writer.add_scalar('loss/policy', policy_loss, updates)
                     writer.add_scalar('loss/entropy_loss', ent_loss, updates)
                     writer.add_scalar('entropy_temprature/alpha', alpha, updates)
-                    writer.add_scalar('success_rate', success_rate, updates)
+                    # writer.add_scalar('success_rate', success_rate, updates)
                     updates += 1
 
         next_state, reward, done, _ = env.step(action) # Step
@@ -116,19 +116,18 @@ for i_episode in range(10000):
 
         state = next_state
     
-    is_success = 1 if reward==100 else 0
-    success_list.append(is_success)
-    success_rate = sum(success_list)/ll
+    reward_list.append(episode_reward)
+    avgrwd = sum(reward_list)/ll
     
     if total_numsteps > args.num_steps:
         break
 
     writer.add_scalar('reward/train', episode_reward, i_episode)
     if i_episode % 50 == 0 and i_episode>500:
-        print("Episode: {}, success rate: {}, episode steps: {}, reward: {}".format(i_episode, success_rate, episode_steps, round(episode_reward, 2)))
+        print("Episode: {}, average reward: {}, episode steps: {}, reward: {}".format(i_episode, avgrwd, episode_steps, round(episode_reward, 2)))
 
-    if (i_episode%50==0 and success_rate>0.5) or i_episode%500==0:    # i_episode > 1000 and i_episode%200==0:
-        agent.save_model(args.env_name, suffix='lr_'+str(args.lr)+'_ep'+str(i_episode)+'_sr'+str(success_rate))
+    if (i_episode%50==0 and avgrwd>500) or i_episode%500==0:    # i_episode > 1000 and i_episode%200==0:
+        agent.save_model(args.env_name, suffix='lr_'+str(args.lr)+'_ep'+str(i_episode)+'_ar'+str(avgrwd))
 
 env.close()
 

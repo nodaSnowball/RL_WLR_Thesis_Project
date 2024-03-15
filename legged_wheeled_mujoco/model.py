@@ -62,7 +62,7 @@ class QNetwork(nn.Module):
 
 
 class GaussianPolicy(nn.Module):
-    def __init__(self, num_inputs=26, num_actions=6, hidden_dim=256, action_space=None):
+    def __init__(self, num_inputs=24, num_actions=2, hidden_dim=256, action_space=None):
         super(GaussianPolicy, self).__init__()
         
         self.linear1 = nn.Linear(num_inputs, hidden_dim)
@@ -154,9 +154,9 @@ class DeterministicPolicy(nn.Module):
         return super(DeterministicPolicy, self).to(device)
 
 
-class GaussianPolicyForward(nn.Module):
+class GaussianPolicy2(nn.Module):
     def __init__(self, num_inputs=15, num_actions=6, hidden_dim=128, action_space=None):
-        super(GaussianPolicyForward, self).__init__()
+        super(GaussianPolicy2, self).__init__()
         
         self.linear1 = nn.Linear(num_inputs, hidden_dim)
         self.linear2 = nn.Linear(hidden_dim, hidden_dim)
@@ -201,5 +201,4 @@ class GaussianPolicyForward(nn.Module):
     def to(self, device):
         self.action_scale = self.action_scale.to(device)
         self.action_bias = self.action_bias.to(device)
-        return super(GaussianPolicyForward, self).to(device)
-
+        return super(GaussianPolicy2, self).to(device)
