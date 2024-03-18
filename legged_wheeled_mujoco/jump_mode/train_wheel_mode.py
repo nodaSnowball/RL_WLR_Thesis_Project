@@ -62,6 +62,13 @@ np.random.seed(args.seed)    # the st seed, the same number of seed, the random 
 
 # Agent
 agent = SAC(env.observation_space.shape[0], env.action_space, args)
+model_dir = os.path.join(os.path.dirname(__file__), 'models/'+time.strftime("%Y%m%d%H%M")+f'_lr_{args.lr}')
+log_dir = os.path.join(os.path.dirname(__file__), 'logs/'+time.strftime("%Y%m%d%H%M")+f'_lr_{args.lr}/')
+os.makedirs(model_dir, exist_ok=True)
+os.makedirs(log_dir, exist_ok=True)
+#Tesnorboard "{}" inside is the value behind
+writer = SummaryWriter(log_dir)
+
 # Memory
 memory = ReplayMemory(args.replay_size, args.seed)
 
@@ -91,7 +98,15 @@ for i_episode in range(10000):
             for i in range(args.updates_per_step):
                 # Update parameters of all the networks
                 critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, args.batch_size, updates)
-                updates += 1
+
+                if c_log%5 == 0:
+                    writer.add_scalar('loss/critic_1', critic_1_loss, updates)
+                    writer.add_scalar('loss/critic_2', critic_2_loss, updates)
+                    writer.add_scalar('loss/policy', policy_loss, updates)
+                    writer.add_scalar('loss/entropy_loss', ent_loss, updates)
+                    writer.add_scalar('entropy_temprature/alpha', alpha, updates)
+                    # writer.add_scalar('success_rate', success_rate, updates)
+                    updates += 1
 
         next_state, reward, done, _ = env.step(action) # Step
         episode_steps += 1
@@ -111,6 +126,13 @@ for i_episode in range(10000):
     
     if total_numsteps > args.num_steps:
         break
+
+    writer.add_scalar('reward/train', episode_reward, i_episode)
+    if i_episode % 50 == 0 and i_episode>500:
+        print("Episode: {}, average reward: {}, episode steps: {}, reward: {}".format(i_episode, avgrwd, episode_steps, round(episode_reward, 2)))
+
+    if (i_episode%50==0 and avgrwd>500) or i_episode%500==0:    # i_episode > 1000 and i_episode%200==0:
+        agent.save_model(path=model_dir+'lr_'+str(args.lr)+'_ep'+str(i_episode)+'_ar'+str(avgrwd))
 
 env.close()
 

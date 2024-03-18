@@ -2,25 +2,27 @@ import numpy as np
 import gym
 from gym import utils
 from gym.envs.mujoco import mujoco_env
-import os
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import random 
 import math
+from time import sleep
 from scipy.spatial.transform import Rotation
-#import register
+# import register
 
 DEFAULT_CAMERA_CONFIG = {
     "distance": 4.0,
 }
 
 # 定义一个仿真环境
-class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
+class WalkEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     # 初始化环境参数
     def __init__(
         self,
-        xml_file=os.path.join(os.path.dirname(__file__), 'asset', "wheel_model.xml"),
+        xml_file=os.path.join(os.path.dirname(__file__), 'asset', "walk_model.xml"),
         ctrl_cost_weight=0.0001,
-        healthy_reward=0.1,
+        healthy_reward=2,
         healthy_z_range=0.05,
         reset_noise_scale=0.1,
     ):
@@ -88,10 +90,10 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.c_step+=1
         self._get_obs()
         d_before = self.get_xydistance()
-        t = action[2]
-        r = action[5]
-        action[2] = (t-r*.5)/1.5
-        action[5] = (t+r*.5)/1.5
+        # t = action[2]
+        # r = action[5]
+        # action[2] = (t-r*.5)/1.5
+        # action[5] = (t+r*.5)/1.5
         # action[5] = t
         self.do_simulation(action, self.frame_skip)
         obs = self._get_obs()
@@ -107,9 +109,9 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # health reward: maintain standing pose
         # control cost: acceleration of motors
         # cost = ctrl_cost
-        punishment = 0      # 0.5*abs(self.obs[-2])
+        punishment = -10*(self.obs[4]-0.4)**2      # height control
         
-        approaching_reward = 100*approch_distance # if forward_check>0 else 0 # -5*abs(d_before-d_after)
+        approaching_reward = -0.01 * d_after**2
 
         done = self.done
         reward =  self.re * (approaching_reward + self.healthy_reward - punishment) # - cost
@@ -117,14 +119,16 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # 判断是否到达终点
         if done == False:
             if d_after < 1:
+                # success
                 done = True
-                reward = self.re * 100
+                reward = self.re * 1000
                 info.update({'is_success':True})
             else:
+                # max step
                 if self.c_step==2000:
                     info.update({'is_success':False})
         else:
-            # if self.c_step < 100:
+            # Fall
             reward -= 10
             info.update({'is_success':False})
         
@@ -162,25 +166,6 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # obs[9:13]          hip, keen     qpos
         obs[13:15] /= 30   # wheel         qvel
         
-        
-        
-        # preprocess
-        # diff = self.obs[0:2]-self.obs[2:4]
-        # twd_target = math.atan2(diff[1],diff[0])
-        # if self.obs[5:9].all() == 0:
-        #     base_ori_z = 0
-        # else:
-        #     base_ori_z = Rotation.from_quat(self.obs[5:9]).as_euler('xyz')
-        #     base_ori_z = base_ori_z[2]
-        # base_ori_z+=2*np.pi if base_ori_z < 0 else 0
-        # twd_target+=2*np.pi if twd_target < 0 else 0
-        # angle_diff =  twd_target - base_ori_z
-        # angle_diff-=2*np.pi if angle_diff>np.pi else 0
-        # angle_diff+=2*np.pi if angle_diff<-np.pi else 0
-        # # degree = 180*angle_diff/np.pi # for debugging
-        # self.obs = np.append(self.obs, angle_diff)
-        # self.obs = np.append(self.obs, (diff[0]**2+diff[1]**2)**0.5)
-
         return obs
 
     # 重置模型
@@ -189,12 +174,21 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.c_step = 0
         qpos = self.init_qpos
         qvel = self.init_qvel
+        
+        # reset obstacles
+        # mocap_quat = self.sim.data.mocap_quat.flat.copy()
+        mpos = np.zeros((3,))
+        mocap_quat = Rotation.from_euler('zyx',[0, 0, 2*np.pi*random.random()]).as_quat()
+        self.sim.data.set_mocap_quat('mocap', mocap_quat)
+        self.sim.data.set_mocap_pos('mocap', mpos)
+        
         # reset target
         qpos[0] = 20*random.random()-10
         qpos[1] = 20*random.random()-10
         # reset inital robot position
         qpos[2] = 20*random.random()-10 if random_pos else 0
         qpos[3] = 20*random.random()-10 if random_pos else 0
+        qpos[4] = 0.45
         qpos[5:9] = Rotation.from_euler('zyx',[0, 0, 2*np.pi*random.random()]).as_quat()
         while ((qpos[0]-qpos[2])**2+(qpos[1]-qpos[3])**2)<1:
             qpos[0] = 20*random.random()-10
@@ -202,6 +196,7 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             
         self.set_state(qpos, qvel)
         self._get_obs()
+        # self.render()
         return self.obs
 
     # 可视化查看器
@@ -215,8 +210,18 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
 if __name__ == '__main__':
     
-    env = gym.make('Biped-v0')
+    env = gym.make('Walk-v0')
     state = env.reset()
+    i = 0
+    while 1:
+        i+=1
+        env.render()
+        env.step(np.zeros((6,)))
+        if i %1000 == 0:
+            env.reset()
+
+        
+
     print(state)
 
     

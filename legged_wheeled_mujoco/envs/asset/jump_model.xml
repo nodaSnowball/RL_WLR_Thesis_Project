@@ -3,10 +3,10 @@
   <option timestep="0.002" integrator="RK4" gravity="0 0 -9.806" solver="Newton" noslip_iterations="0"/>
   <size njmax="10000" nconmax="10000"/>
   <default>
-    <geom contype="1" conaffinity="1" rgba="0.5 0.6 0.7 1" margin="0.001" group="0"/>
-    <motor gear="20" ctrllimited="true" ctrlrange="-80 80" />
-    <position gear="10" ctrllimited="true" kp="5"/>
+    <geom contype="1" conaffinity="1" friction="0.6 0.3 0.3" rgba="0.5 0.6 0.7 1" margin="0.001" group="0"/>
+    <motor gear="50" ctrllimited="true" ctrlrange="-10 10" />
     <joint limited="true" frictionloss="0.5" damping="45" armature="0.1"/>
+    <position ctrllimited='true' ctrlrange='-30 30' />
   </default>
 
   <asset>
@@ -38,37 +38,28 @@
 
   <worldbody>
     <light directional="true" diffuse=".8 .8 .8" pos="0 0 10" dir="0 0 -10"/>
-    <light pos="0.5 -.4 1.0" dir="1 2 -1.5" diffuse=".6 .6 .6"/>
-    <camera name="top" pos=".0 .0 25." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
-    <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid" conaffinity='0' solref='0 -1000'/>
-
-    <!-- <geom name="box2" pos="-2 1 0.18" size="0.8 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
-    <geom name="box3" pos="-3.3 1.5 0.18" size="0.5 0.5 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 0 0" conaffinity="0"/>
-    <geom name="box3r" pos="-3.4 0.5 0.15" size="0.6 0.5 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 -0.05 0" conaffinity="0"/>
-    <geom name="box4" pos="-4.4 1.5 0.18" size="0.6 0.5 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
-    <geom name="box4r" pos="-4.8 0.5 0.16" size="0.8 0.5 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 0.05 0" conaffinity="0"/>
-    <geom name="box5" pos="-5.7 1.5 0.14" size="0.7 0.5 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 -0.05 -0" conaffinity="0"/>
-    <geom name="box5r" pos="-6.2 0.5 0.2" size="0.6 0.5 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
-    <geom name="box6" pos="-7.1 1.5 0.14" size="0.7 0.5 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 0.05 0" conaffinity="0"/>
-    <geom name="box6r" pos="-7.3 0.5 0.19" size="0.5 0.5 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 -0.02 0" conaffinity="0"/>
-    <geom name="box7" pos="-8.8 1 0.18" size="1 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
-    <geom name="box8r" pos="-0.51 1.0 0.32" size="0.7 1.0 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 -0.2 0" conaffinity="0"/>
-    <geom name="box9" pos="0.671 1.0 0.458" size="0.5 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/>
-    <geom name="box9r" pos="1.85 1.0 0.32" size="0.7 1.0 0.03" type="box" rgba="1 0.6 0.8 1" euler="0 0.2 0" conaffinity="0"/>
-    <geom name="box10" pos="3.04 1.0 0.18" size="0.5 1 0.03" type="box" rgba="1 1 1 1" euler="0 0 0" conaffinity="0"/> -->
-    <!-- <body name='end_ref' pos='.0 .0 .0'>
-      <joint name='end_x' type='slide' axis='1 0 0' limited='true' range='-20 20' />
-      <joint name='end_y' type='slide' axis='0 1 0' limited='true' range='-20 20' />
-      <joint />
-      <geom name="end" type="cylinder" pos="-0 -0 .0" size="0.2 0.01 0" rgba="0. 0.8 0. 1" contype='0' conaffinity="0"/>
-    </body> -->
-    
+    <light pos="0.5 -.4 1." dir="1 2 -1.5" diffuse=".6 .6 .6"/>
+    <camera name="top" pos="0. 0. 2." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
+    <camera name="left" pos="0. 1 0.3" xyaxes="-1. 0. 0. 0. 0. 1."/>
+    <camera name="right" pos="0. -1 0.3" xyaxes="1. 0. 0. 0. 0. 1."/>
+    <camera name="track" mode="trackcom" fovy="45" pos="0.5 -1. 0.35" xyaxes="0.866 0.5 0 0 0 1"/>
+    <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid" solimp=".9 .95 .001" solref='-10000 -1000'/>
+    <body name='stair' pos='0 0 0'>
+      <joint name='targetx' type='slide' axis='1 0 0' limited='false'/>
+      <joint name='targety' type='slide' axis='0 1 0' limited='false'/>
+      <joint name='targetz' type='slide' axis='0 0 1' limited='false'/>
+      <geom name="plat" type="box" size="0.8 2 .08" pos="0 0 0" rgba=".8 .8 .8 1"/>
+      <!-- <geom name="stair1" type="mesh" mesh="stair1" pos="0.0 0 -0.05"/>
+      <geom name="stair2" type="mesh" mesh="stair2" pos="0.2 0 -0.05"/>
+      <geom name="stair3" type="mesh" mesh="stair3" pos="0.4 0 -0.05"/>
+      <geom name="stair4" type="mesh" mesh="stair4" pos="0.6 0 -0.05"/>
+      <geom name="stair5" type="mesh" mesh="stair5" pos="0.8 0 -0.05"/> -->
+      <geom name="end" type="cylinder" size="0.1 0.01 0" pos="0 0 .08" rgba="0 1 0 1" contype="0" conaffinity="0"/>
+    </body>
     <!-- ======= ROBOT ======= -->
-    <body name="base_link" pos="0 0 0.25" euler="0 0 0">
-      <camera name="track" mode="trackcom" fovy="45" pos="-3 -3 0.35" xyaxes="0.5 -0.5 0 0 0 1"/>
+    <body name="base_link" pos="-10 10 0.25" euler="0 0 0">
       <inertial pos="0.018885 0.00062964 0.06018" quat="-0.064773 0.618315 0.0968439 0.777246" mass="4.6733" diaginertia="0.054592 0.0348635 0.0323885"/>
-      <joint name="floating_base" type="free" limited="false" frictionloss="0.001" damping="0.01" armature="0.0"/>
-
+      <joint name="floating_base" type="free" limited="false" frictionloss=".001" damping=".01" armature="0."/>
       <geom name="base1" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0 0 1" mesh="base_link"/>
       <geom name="base2" size="0.17 0.077 0.07" pos="0.02 0 0.06" type="box" rgba="0.75294 0 0 0.000987654321"/>
       <geom name="base3" size="0.048 0.0175" pos="0.017241 0.106 0.0613" quat="0.499998 -0.500002 0.5 0.5" type="cylinder" rgba="0.75294 0 0 0.000987654321"/>
@@ -76,7 +67,7 @@
       <site name="imu" pos="0 0 0"/>
       <body name="left_thigh" pos="0.017241 0.13399 0.0613" euler="-1.57 0 2.95">
         <inertial pos="0.17494 0.0025294 0.012308" quat="0.0283574 0.728032 0.00169629 0.684954" mass="1.3343" diaginertia="0.00985328 0.00920167 0.00123438"/>
-        <joint name="left_hip" pos="0 0 0" axis="0 0 1" range="-1.5 1.5"/>
+        <joint name="left_hip" pos="0 0 0" axis="0 0 1" range="-3 3"/>
         <geom name="left_thigh1" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.89804 0.91765 0 1" mesh="left_thigh"/>
         <geom name="left_thigh2" size="0.1 0.035 0.005" pos="0.085 0 0" type="box" rgba="0 0.91765 0.92941 0.000987654321"/>
         <geom name="left_thigh3" size="0.048 0.0175" pos="0.21 0 -0.02375" type="cylinder" rgba="0 0.91765 0.92941 0.000987654321"/>
@@ -115,18 +106,18 @@
     </body>
   </worldbody>
   <actuator>
-    <position name="left_hip_motor" joint="left_hip" ctrlrange="-1.5 1.5" />
-    <position name="left_knee_motor" joint="left_knee" ctrlrange="-1.5 1.5"/>
+    <position name="left_hip_motor" joint="left_hip" />
+    <position name="left_knee_motor" joint="left_knee"/>
     <motor name="left_ankle_motor" joint="left_ankle"/>
-    <position name="right_hip_motor" joint="right_hip" ctrlrange="-1.5 1.5" />
-    <position name="right_knee_motor" joint="right_knee" ctrlrange="-1.5 1.5"/>
+    <position name="right_hip_motor" joint="right_hip"/>
+    <position name="right_knee_motor" joint="right_knee"/>
     <motor name="right_ankle_motor" joint="right_ankle"/>
   </actuator>
 
   <sensor>
     <!-- The sensor sequence cannot be changed -->
-    <!-- <jointpos name='target_x' joint='end_x' />
-    <jointpos name='target_y' joint='end_y' /> -->
+    <jointpos name='target_x' joint='end_x' />
+    <jointpos name='target_y' joint='end_y' />
     <framepos name='base_pos' objtype='body' objname='base_link' />
     <framequat name='base_ori' objtype='body' objname='base_link' />
     <jointpos name='left_hip_pos' joint='left_hip' />

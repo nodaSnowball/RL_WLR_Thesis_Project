@@ -18,7 +18,7 @@ class BipedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     # 初始化环境参数
     def __init__(
         self,
-        xml_file=os.path.join(os.path.dirname(__file__), 'asset', "wheel_model.xml"),
+        xml_file=os.path.join(os.path.dirname(__file__), 'asset', "Legged_wheel3.xml"),
         ctrl_cost_weight=0.0001,
         healthy_reward=0.1,
         healthy_z_range=0.05,

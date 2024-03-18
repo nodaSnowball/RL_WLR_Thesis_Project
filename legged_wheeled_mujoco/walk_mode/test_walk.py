@@ -14,7 +14,7 @@ from stable_baselines3.common.callbacks import EvalCallback,CheckpointCallback,C
 from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env_name', default="Biped-v0",
+parser.add_argument('--env_name', default="Walk-v0",
                     help='Mujoco Gym environment (default: Biped-v0)')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')

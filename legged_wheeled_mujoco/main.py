@@ -11,7 +11,7 @@ import envs.register
 from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env-name', default="Biped-v0",
+parser.add_argument('--env-name', default="Walk-v0",
                     help='Mujoco Gym environment (default: Biped-v0)')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')
@@ -61,10 +61,6 @@ np.random.seed(args.seed)    # the st seed, the same number of seed, the random 
 # Agent
 agent = SAC(env.observation_space.shape[0], env.action_space, args)
 
-#Tesnorboard "{}" inside is the value behind
-writer = SummaryWriter('runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                                                     args.env_name,args.policy, "autotune" if args.automatic_entropy_tuning else ""))
-
 # Memory
 memory = ReplayMemory(args.replay_size, args.seed)
 
@@ -86,20 +82,13 @@ for i_episode in range(10000):
         else:
             action = agent.select_action(state)  # Sample action from policy
         # if total_numsteps>1e4:
-        # env.render()
+        env.render()
 
         if len(memory) > args.batch_size:
             # Number of updates per step in environment
             for i in range(args.updates_per_step):
                 # Update parameters of all the networks
                 critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, args.batch_size, updates)
-
-                writer.add_scalar('loss/critic_1', critic_1_loss, updates)
-                writer.add_scalar('loss/critic_2', critic_2_loss, updates)
-                writer.add_scalar('loss/policy', policy_loss, updates)
-                writer.add_scalar('loss/entropy_loss', ent_loss, updates)
-                writer.add_scalar('entropy_temprature/alpha', alpha, updates)
-                writer.add_scalar('success_rate', success_rate, updates)
                 updates += 1
 
         next_state, reward, done, _ = env.step(action) # Step
@@ -120,13 +109,6 @@ for i_episode in range(10000):
     
     if total_numsteps > args.num_steps:
         break
-
-    writer.add_scalar('reward/train', episode_reward, i_episode)
-    if i_episode<500 and i_episode % 10 == 0:
-        print("Episode: {}, success rate: {}, episode steps: {}, reward: {}".format(i_episode, success_rate, episode_steps, round(episode_reward, 2)))
-
-    if (i_episode%50==0 and success_rate>0.5) or i_episode%500==0:    # i_episode > 1000 and i_episode%200==0:
-        agent.save_model(args.env_name, suffix='nopreproc_lr_'+str(args.lr)+'_ep'+str(i_episode)+'_sr'+str(success_rate))
 
 env.close()
 

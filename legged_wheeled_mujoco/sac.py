@@ -17,7 +17,7 @@ class SAC(object):
         self.target_update_interval = args.target_update_interval  # the interval of update
         self.automatic_entropy_tuning = args.automatic_entropy_tuning
 
-        self.device = torch.device("cuda" if args.cuda else "cpu")
+        self.device = torch.device("cpu" if args.cuda else "cpu")
 
         self.critic = QNetwork(num_inputs, action_space.shape[0], args.hidden_size).to(device=self.device)   # state num; action num; hidden size num.
         self.critic_optim = Adam(self.critic.parameters(), lr=args.lr)
@@ -31,7 +31,7 @@ class SAC(object):
                 self.target_entropy = -torch.prod(torch.Tensor(action_space.shape).to(self.device)).item()
                 self.log_alpha = torch.zeros(1, requires_grad=True, device=self.device)
                 self.alpha_optim = Adam([self.log_alpha], lr=args.lr)
-
+            self.policy = GaussianPolicy(num_inputs, action_space.shape[0], args.hidden_size, action_space).to(self.device)
             if args.env_name == 'Biped-v0':
                 self.policy = GaussianPolicy(num_inputs, action_space.shape[0], args.hidden_size, action_space).to(self.device)
             elif args.env_name == 'Forward-v0' or args.env_name == 'Stop-v0':
