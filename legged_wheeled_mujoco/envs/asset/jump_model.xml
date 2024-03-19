@@ -39,16 +39,16 @@
   <worldbody>
     <light directional="true" diffuse=".8 .8 .8" pos="0 0 10" dir="0 0 -10"/>
     <light pos="0.5 -.4 1." dir="1 2 -1.5" diffuse=".6 .6 .6"/>
-    <camera name="top" pos="0. 0. 2." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
+    <camera name="top" pos="0. 0. 20." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
     <camera name="left" pos="0. 1 0.3" xyaxes="-1. 0. 0. 0. 0. 1."/>
     <camera name="right" pos="0. -1 0.3" xyaxes="1. 0. 0. 0. 0. 1."/>
     <camera name="track" mode="trackcom" fovy="45" pos="0.5 -1. 0.35" xyaxes="0.866 0.5 0 0 0 1"/>
     <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid" solimp=".9 .95 .001" solref='-10000 -1000'/>
-    <body name='stair' pos='0 0 0'>
+    <body name='mocap' pos='0 0 0'>
       <joint name='targetx' type='slide' axis='1 0 0' limited='false'/>
       <joint name='targety' type='slide' axis='0 1 0' limited='false'/>
       <joint name='targetz' type='slide' axis='0 0 1' limited='false'/>
-      <geom name="plat" type="box" size="0.8 2 .08" pos="0 0 0" rgba=".8 .8 .8 1"/>
+      <geom name="plat" type="box" size="0.8 2 .2" pos="0 0 0" rgba=".8 .8 .8 1"/>
       <!-- <geom name="stair1" type="mesh" mesh="stair1" pos="0.0 0 -0.05"/>
       <geom name="stair2" type="mesh" mesh="stair2" pos="0.2 0 -0.05"/>
       <geom name="stair3" type="mesh" mesh="stair3" pos="0.4 0 -0.05"/>
@@ -116,8 +116,8 @@
 
   <sensor>
     <!-- The sensor sequence cannot be changed -->
-    <jointpos name='target_x' joint='end_x' />
-    <jointpos name='target_y' joint='end_y' />
+    <jointpos name='target_x' joint='targetx' />
+    <jointpos name='target_y' joint='targety' />
     <framepos name='base_pos' objtype='body' objname='base_link' />
     <framequat name='base_ori' objtype='body' objname='base_link' />
     <jointpos name='left_hip_pos' joint='left_hip' />
