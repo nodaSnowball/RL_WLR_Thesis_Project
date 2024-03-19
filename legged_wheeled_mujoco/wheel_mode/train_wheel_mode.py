@@ -1,5 +1,7 @@
 import argparse
-import datetime
+import time
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import gym
 import numpy as np
 import itertools
@@ -11,7 +13,7 @@ import envs.register
 from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env-name', default="Walk-v0",
+parser.add_argument('--env-name', default="Biped-v0",
                     help='Mujoco Gym environment (default: Biped-v0)')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')
@@ -22,7 +24,7 @@ parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor for reward (default: 0.99)')
 parser.add_argument('--tau', type=float, default=0.001, metavar='G',
                     help='target smoothing coefficient(τ) (default: 0.005)')
-parser.add_argument('--lr', type=float, default=5e-4, metavar='G',
+parser.add_argument('--lr', type=float, default=1e-6, metavar='G',
                     help='learning rate (default: 0.0003)')
 parser.add_argument('--alpha', type=float, default=0.2, metavar='G',
                     help='Temperature parameter α determines the relative importance of the entropy\
@@ -35,7 +37,7 @@ parser.add_argument('--batch_size', type=int, default=256, metavar='N',
                     help='batch size (default: 256)')
 parser.add_argument('--num_steps', type=int, default=10000001, metavar='N',
                     help='maximum number of steps (default: 500000)')
-parser.add_argument('--hidden_size', type=int, default=256, metavar='N',
+parser.add_argument('--hidden_size', type=int, default=128, metavar='N',
                     help='hidden size (default: 256)')
 parser.add_argument('--updates_per_step', type=int, default=1, metavar='N',
                     help='model updates per simulator step (default: 1)')
@@ -60,13 +62,13 @@ np.random.seed(args.seed)    # the st seed, the same number of seed, the random 
 
 # Agent
 agent = SAC(env.observation_space.shape[0], env.action_space, args)
-
 # Memory
 memory = ReplayMemory(args.replay_size, args.seed)
 
 # Training Loop
 total_numsteps = 0
 updates = 0
+c_log = 0
 ll = 50
 success_list = deque([], maxlen=ll)
 
@@ -81,11 +83,11 @@ for i_episode in range(10000):
             action = env.action_space.sample()  # Sample random action
         else:
             action = agent.select_action(state)  # Sample action from policy
-        # if total_numsteps>1e4:
         env.render()
 
         if len(memory) > args.batch_size:
             # Number of updates per step in environment
+            c_log += 1 
             for i in range(args.updates_per_step):
                 # Update parameters of all the networks
                 critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, args.batch_size, updates)
@@ -103,9 +105,9 @@ for i_episode in range(10000):
 
         state = next_state
     
-    is_success = 1 if reward==1000 else 0
-    success_list.append(is_success)
-    success_rate = sum(success_list)/ll
+    is_success = 1 if reward==10 else 0
+    success_list.append(episode_reward)
+    avgrwd = sum(success_list)/ll
     
     if total_numsteps > args.num_steps:
         break

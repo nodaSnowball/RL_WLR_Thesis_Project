@@ -11,7 +11,7 @@ import envs.register
 from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env-name', default="Walk-v0",
+parser.add_argument('--env-name', default="Stop-v0",
                     help='Mujoco Gym environment (default: Biped-v0)')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')
@@ -35,7 +35,7 @@ parser.add_argument('--batch_size', type=int, default=256, metavar='N',
                     help='batch size (default: 256)')
 parser.add_argument('--num_steps', type=int, default=10000001, metavar='N',
                     help='maximum number of steps (default: 500000)')
-parser.add_argument('--hidden_size', type=int, default=256, metavar='N',
+parser.add_argument('--hidden_size', type=int, default=128, metavar='N',
                     help='hidden size (default: 256)')
 parser.add_argument('--updates_per_step', type=int, default=1, metavar='N',
                     help='model updates per simulator step (default: 1)')
@@ -61,14 +61,19 @@ np.random.seed(args.seed)    # the st seed, the same number of seed, the random 
 # Agent
 agent = SAC(env.observation_space.shape[0], env.action_space, args)
 
+#Tesnorboard "{}" inside is the value behind
+writer = SummaryWriter('runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                                                     args.env_name,args.policy, "autotune" if args.automatic_entropy_tuning else ""))
+
 # Memory
 memory = ReplayMemory(args.replay_size, args.seed)
 
 # Training Loop
 total_numsteps = 0
 updates = 0
+c_log = 0
 ll = 50
-success_list = deque([], maxlen=ll)
+reward_list = deque([], maxlen=ll)
 
 for i_episode in range(10000):
     episode_reward = 0
@@ -81,15 +86,23 @@ for i_episode in range(10000):
             action = env.action_space.sample()  # Sample random action
         else:
             action = agent.select_action(state)  # Sample action from policy
-        # if total_numsteps>1e4:
         env.render()
 
         if len(memory) > args.batch_size:
             # Number of updates per step in environment
+            c_log += 1 
             for i in range(args.updates_per_step):
                 # Update parameters of all the networks
                 critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, args.batch_size, updates)
-                updates += 1
+
+                if c_log%5 == 0:
+                    writer.add_scalar('loss/critic_1', critic_1_loss, updates)
+                    writer.add_scalar('loss/critic_2', critic_2_loss, updates)
+                    writer.add_scalar('loss/policy', policy_loss, updates)
+                    writer.add_scalar('loss/entropy_loss', ent_loss, updates)
+                    writer.add_scalar('entropy_temprature/alpha', alpha, updates)
+                    # writer.add_scalar('success_rate', success_rate, updates)
+                    updates += 1
 
         next_state, reward, done, _ = env.step(action) # Step
         episode_steps += 1
@@ -103,12 +116,18 @@ for i_episode in range(10000):
 
         state = next_state
     
-    is_success = 1 if reward==1000 else 0
-    success_list.append(is_success)
-    success_rate = sum(success_list)/ll
+    reward_list.append(episode_reward)
+    avgrwd = sum(reward_list)/ll
     
     if total_numsteps > args.num_steps:
         break
+
+    writer.add_scalar('reward/train', episode_reward, i_episode)
+    if i_episode % 50 == 0 and i_episode>500:
+        print("Episode: {}, average reward: {}, episode steps: {}, reward: {}".format(i_episode, avgrwd, episode_steps, round(episode_reward, 2)))
+
+    if (i_episode%50==0 and avgrwd>500) or i_episode%500==0:    # i_episode > 1000 and i_episode%200==0:
+        agent.save_model(args.env_name, suffix='lr_'+str(args.lr)+'_ep'+str(i_episode)+'_ar'+str(avgrwd))
 
 env.close()
 
