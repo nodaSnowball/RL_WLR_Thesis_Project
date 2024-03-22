@@ -2,7 +2,7 @@ import argparse
 import time
 import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import gym
+import gymnasium as gym
 import numpy as np
 import itertools
 import torch
@@ -10,11 +10,12 @@ from torch.utils.tensorboard import SummaryWriter
 import envs.register
 from stable_baselines3 import SAC
 from stable_baselines3.common.callbacks import EvalCallback,CheckpointCallback,CallbackList
-# from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
+from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env_name', default="Biped-v0",
+parser.add_argument('--env_name', default="Jump-v0",
                     help='Mujoco Gym environment (default: Biped-v0)')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')
@@ -53,15 +54,20 @@ parser.add_argument('--cuda', action="store_true", default=True,
 args = parser.parse_args()
 
 # Environment
-env = gym.make(args.env_name)
+def make_env(n=2000, render_mode=None, camera_id=None):
+        def _init():
+                env = gym.make(args.env_name, healthy_reward=1, render_mode=render_mode, camera_id=camera_id)
+                return env
+        return _init
+eval_env = DummyVecEnv([make_env(1000, render_mode='human', camera_id=0) for _ in range(1)])
 
 num_test = 100
 render = True
 
 # Agent
-model = SAC.load(os.path.join(os.path.dirname(__file__), 'test_model/best_model'))
-ec = EvalCallback(env, eval_freq=1000, n_eval_episodes=20, render=0)
-state = env.reset()
+model = SAC.load(os.path.join(os.path.dirname(__file__), 'test_model/checkpoint_model_3000000_steps'))
+evaluate_policy(model, eval_env, 100, deterministic=False, render=True)
+state, info = env.reset()
 done = False
 step = 0
 c_game = 1
@@ -72,14 +78,14 @@ steps = 0
 
 while 1:
         action, _ = model.predict(state, deterministic=0)
-        state, reward, done, _ = env.step(action)
+        state, reward, done, _, info = env.step(action)
         rewards += reward
         step += 1
         
         if done:
                 print(f'Game {c_game}: total_reward={rewards}, length={step}')
                 steps += step
-                state = env.reset()
+                state, info = env.reset()
                 step = 0
                 c_game += 1
                 avg_reward += rewards/num_test
