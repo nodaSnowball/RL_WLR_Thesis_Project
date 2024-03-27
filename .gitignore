@@ -2,6 +2,7 @@
 legged_wheeled_mujoco/.vscode/
 **/.vscode/
 legged_wheeled_mujoco/**/history/
+legged_wheeled_mujoco/**/history_lidar/
 legged_wheeled_mujoco/**/test_model/
 legged_wheeled_mujoco/envs/__pycache__/biped.cpython-37.pyc
 legged_wheeled_mujoco/envs/__pycache__/register.cpython-37.pyc

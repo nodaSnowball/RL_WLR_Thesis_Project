@@ -40,10 +40,10 @@
     <light directional="true" diffuse=".8 .8 .8" pos="0 0 10" dir="0 0 -10"/>
     <light pos="0.5 -.4 1." dir="1 2 -1.5" diffuse=".6 .6 .6"/>
     <camera name="top" pos="0. 0. 20." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
-    <camera name="left" pos="0. 1 0.3" xyaxes="-1. 0. 0. 0. 0. 1."/>
-    <camera name="right" pos="0. -1 0.3" xyaxes="1. 0. 0. 0. 0. 1."/>
+    <camera name="left" pos="0. 5 0.3" xyaxes="-1. 0. 0. 0. 0. 1."/>
+    <camera name="right" pos="0. -5 0.3" xyaxes="1. 0. 0. 0. 0. 1."/>
     <camera name="track" mode="trackcom" fovy="45" pos="0.5 -1. 0.35" xyaxes="0.866 0.5 0 0 0 1"/>
-    <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid" solimp=".9 .95 .001" solref='-10000 -1000'/>
+    <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid"/>
     <body name='mocap' mocap='true' pos='0 0 .2'>
       <geom name="plat" type="box" size="0.8 2 .2" pos="0 0 0" rgba=".8 .8 .8 1"/>
       <!-- <geom name="stair1" type="mesh" mesh="stair1" pos="0.0 0 -0.05"/>
@@ -62,6 +62,63 @@
       <geom name="base3" size="0.048 0.0175" pos="0.017241 0.106 0.0613" quat="0.499998 -0.500002 0.5 0.5" type="cylinder" rgba="0.75294 0 0 0.000987654321"/>
       <geom name="base4" size="0.048 0.0175" pos="0.017241 -0.106 0.0613" quat="0.499998 -0.500002 0.5 0.5" type="cylinder" rgba="0.75294 0 0 0.000987654321"/>
       <site name="imu" pos="0 0 0"/>
+      <site name="lidar01" pos="0   -.30  .15"   zaxis="1 0 0"/>
+      <site name="lidar02" pos="0   -.20  .15"   zaxis="1 0 0"/>
+      <site name="lidar03" pos="0   -.10  .15"   zaxis="1 0 0"/>
+      <site name="lidar04" pos="0   0.00  .15"   zaxis="1 0 0"/>
+      <site name="lidar05" pos="0   0.10  .15"   zaxis="1 0 0"/>
+      <site name="lidar06" pos="0   0.20  .15"  zaxis="1 0 0"/>
+      <site name="lidar07" pos="0   0.30  .15" zaxis="1 0 0"/>
+      <site name="lidar08" pos="0   -.30  .10" zaxis="1 0 0"/>
+      <site name="lidar09" pos="0   -.20  .10" zaxis="1 0 0"/>
+      <site name="lidar10" pos="0   -.10  .10" zaxis="1 0 0"/>
+      <site name="lidar11" pos="0   0.00  .10" zaxis="1 0 0"/>
+      <site name="lidar12" pos="0   0.10  .10" zaxis="1 0 0"/>
+      <site name="lidar13" pos="0   0.20  .10" zaxis="1 0 0"/>
+      <site name="lidar14" pos="0   0.30  .10" zaxis="1 0 0"/>
+      <site name="lidar15" pos="0   -.30  .05" zaxis="1 0 0"/>
+      <site name="lidar16" pos="0   -.20  .05" zaxis="1 0 0"/>
+      <site name="lidar17" pos="0   -.10  .05" zaxis="1 0 0"/>
+      <site name="lidar18" pos="0   0.00  .05" zaxis="1 0 0"/>
+      <site name="lidar19" pos="0   0.10  .05" zaxis="1 0 0"/>
+      <site name="lidar20" pos="0   0.20  .05" zaxis="1 0 0"/>
+      <site name="lidar21" pos="0   0.30  .05" zaxis="1 0 0"/>
+      <site name="lidar22" pos="0   -.30  .00" zaxis="1 0 0"/>
+      <site name="lidar23" pos="0   -.20  .00" zaxis="1 0 0"/>
+      <site name="lidar24" pos="0   -.10  .00" zaxis="1 0 0"/>
+      <site name="lidar25" pos="0   0.00  .00" zaxis="1 0 0"/>
+      <site name="lidar26" pos="0   0.10  .00" zaxis="1 0 0"/>
+      <site name="lidar27" pos="0   0.20  .00" zaxis="1 0 0"/>
+      <site name="lidar28" pos="0   0.30  .00" zaxis="1 0 0"/>
+      <site name="lidar29" pos="0   -.30  -.05" zaxis="1 0 0"/>
+      <site name="lidar30" pos="0   -.20  -.05" zaxis="1 0 0"/>
+      <site name="lidar31" pos="0   -.10  -.05" zaxis="1 0 0"/>
+      <site name="lidar32" pos="0   0.00  -.05" zaxis="1 0 0"/>
+      <site name="lidar33" pos="0   0.10  -.05" zaxis="1 0 0"/>
+      <site name="lidar34" pos="0   0.20  -.05" zaxis="1 0 0"/>
+      <site name="lidar35" pos="0   0.30  -.05" zaxis="1 0 0"/>
+      <site name="lidar36" pos="0   -.30  -.10" zaxis="1 0 0"/>
+      <site name="lidar37" pos="0   -.20  -.10" zaxis="1 0 0"/>
+      <site name="lidar38" pos="0   -.10  -.10" zaxis="1 0 0"/>
+      <site name="lidar39" pos="0   0.00  -.10" zaxis="1 0 0"/>
+      <site name="lidar40" pos="0   0.10  -.10" zaxis="1 0 0"/>
+      <site name="lidar41" pos="0   0.20  -.10" zaxis="1 0 0"/>
+      <site name="lidar42" pos="0   0.30  -.10" zaxis="1 0 0"/>
+      <site name="lidar43" pos="0   -.30  -.15" zaxis="1 0 0"/>
+      <site name="lidar44" pos="0   -.20  -.15" zaxis="1 0 0"/>
+      <site name="lidar45" pos="0   -.10  -.15" zaxis="1 0 0"/>
+      <site name="lidar46" pos="0   0.00  -.15" zaxis="1 0 0"/>
+      <site name="lidar47" pos="0   0.10  -.15" zaxis="1 0 0"/>
+      <site name="lidar48" pos="0   0.20  -.15" zaxis="1 0 0"/>
+      <site name="lidar49" pos="0   0.30  -.15" zaxis="1 0 0"/>
+      <site name="lidar50" pos="0   -.30  -.20" zaxis="1 0 0"/>
+      <site name="lidar51" pos="0   -.20  -.20" zaxis="1 0 0"/>
+      <site name="lidar52" pos="0   -.10  -.20" zaxis="1 0 0"/>
+      <site name="lidar53" pos="0   0.00  -.20" zaxis="1 0 0"/>
+      <site name="lidar54" pos="0   0.10  -.20" zaxis="1 0 0"/>
+      <site name="lidar55" pos="0   0.20  -.20" zaxis="1 0 0"/>
+      <site name="lidar56" pos="0   0.30  -.20" zaxis="1 0 0"/>
+
       <body name="left_thigh" pos="0.017241 0.13399 0.0613" euler="-1.57 0 2.35">
         <inertial pos="0.17494 0.0025294 0.012308" quat="0.0283574 0.728032 0.00169629 0.684954" mass="1.3343" diaginertia="0.00985328 0.00920167 0.00123438"/>
         <joint name="left_hip" pos="0 0 0" axis="0 0 1" range="-15 15"/>
@@ -111,20 +168,63 @@
     <!-- <motor name="right_ankle_motor" joint="right_ankle" ctrllimited="true" ctrlrange="-80 80"/> -->
   </actuator>
 
-  <!-- <sensor>
-    <jointpos name='target_x' joint='targetx' />
-    <jointpos name='target_y' joint='targety' />
-    <framepos name='base_pos' objtype='body' objname='base_link' />
-    <framequat name='base_ori' objtype='body' objname='base_link' />
-    <jointpos name='left_hip_pos' joint='left_hip' />
-    <jointpos name='left_knee_pos' joint='left_knee' />
-    <jointpos name='right_hip_pos' joint='right_hip' />
-    <jointpos name='right_knee_pos' joint='right_knee' />
-    <jointvel name='left_wheel' joint='left_ankle' />
-    <jointvel name='right_wheel' joint='right_ankle' />
-    <velocimeter name="Base_Linear_vel" site="imu" />
-    <accelerometer name="Base_Linear_acc" site="imu" />
-    <gyro name='Base_Angular_vel' site='imu'/>
-  </sensor> -->
+  <sensor>
+    <rangefinder name="l01" site="lidar01"/>
+    <rangefinder name="l02" site="lidar02"/>
+    <rangefinder name="l03" site="lidar03"/>
+    <rangefinder name="l04" site="lidar04"/>
+    <rangefinder name="l05" site="lidar05"/>
+    <rangefinder name="l06" site="lidar06"/>
+    <rangefinder name="l07" site="lidar07"/>
+    <rangefinder name="l08" site="lidar08"/>
+    <rangefinder name="l09" site="lidar09"/>
+    <rangefinder name="l10" site="lidar10"/>
+    <rangefinder name="l11" site="lidar11"/>
+    <rangefinder name="l12" site="lidar12"/>
+    <rangefinder name="l13" site="lidar13"/>
+    <rangefinder name="l14" site="lidar14"/>
+    <rangefinder name="l15" site="lidar15"/>
+    <rangefinder name="l16" site="lidar16"/>
+    <rangefinder name="l17" site="lidar17"/>
+    <rangefinder name="l18" site="lidar18"/>
+    <rangefinder name="l19" site="lidar19"/>
+    <rangefinder name="l20" site="lidar20"/>
+    <rangefinder name="l21" site="lidar21"/>
+    <rangefinder name="l22" site="lidar22"/>
+    <rangefinder name="l23" site="lidar23"/>
+    <rangefinder name="l24" site="lidar24"/>
+    <rangefinder name="l25" site="lidar25"/>
+    <rangefinder name="l26" site="lidar26"/>
+    <rangefinder name="l27" site="lidar27"/>
+    <rangefinder name="l28" site="lidar28"/>
+    <rangefinder name="l29" site="lidar29"/>
+    <rangefinder name="l30" site="lidar30"/>
+    <rangefinder name="l31" site="lidar31"/>
+    <rangefinder name="l32" site="lidar32"/>
+    <rangefinder name="l33" site="lidar33"/>
+    <rangefinder name="l34" site="lidar34"/>
+    <rangefinder name="l35" site="lidar35"/>
+    <rangefinder name="l36" site="lidar36"/>
+    <rangefinder name="l37" site="lidar37"/>
+    <rangefinder name="l38" site="lidar38"/>
+    <rangefinder name="l39" site="lidar39"/>
+    <rangefinder name="l40" site="lidar40"/>
+    <rangefinder name="l41" site="lidar41"/>
+    <rangefinder name="l42" site="lidar42"/>
+    <rangefinder name="l43" site="lidar43"/>
+    <rangefinder name="l44" site="lidar44"/>
+    <rangefinder name="l45" site="lidar45"/>
+    <rangefinder name="l46" site="lidar46"/>
+    <rangefinder name="l47" site="lidar47"/>
+    <rangefinder name="l48" site="lidar48"/>
+    <rangefinder name="l49" site="lidar49"/>
+    <rangefinder name="l50" site="lidar42"/>
+    <rangefinder name="l51" site="lidar43"/>
+    <rangefinder name="l52" site="lidar44"/>
+    <rangefinder name="l53" site="lidar45"/>
+    <rangefinder name="l54" site="lidar46"/>
+    <rangefinder name="l55" site="lidar47"/>
+    <rangefinder name="l56" site="lidar48"/>
+  </sensor>
 
 </mujoco>

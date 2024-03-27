@@ -56,18 +56,19 @@ args = parser.parse_args()
 # Environment
 def make_env(n=2000, render_mode=None, camera_id=None):
         def _init():
-                env = gym.make(args.env_name, healthy_reward=1, render_mode=render_mode, camera_id=camera_id)
+                env = gym.make(args.env_name, max_step=n, healthy_reward=1, render_mode=render_mode, camera_id=camera_id)
                 return env
         return _init
-eval_env = DummyVecEnv([make_env(1000, render_mode='human', camera_id=0) for _ in range(1)])
+eval_env = DummyVecEnv([make_env(500, render_mode='human', camera_id=2) for _ in range(1)])
 
 num_test = 100
 render = True
 
 # Agent
-model = SAC.load(os.path.join(os.path.dirname(__file__), 'test_model/checkpoint_model_3000000_steps'))
-evaluate_policy(model, eval_env, 100, deterministic=False, render=True)
-state, info = env.reset()
+# model = SAC.load(os.path.join(os.path.dirname(__file__), 'test_model/best_model'))
+model = SAC.load(os.path.join(os.path.dirname(__file__), '../models/jump/land'))
+evaluate_policy(model, eval_env, 100, deterministic=False, render=True, return_episode_rewards=True)
+state = eval_env.reset()
 done = False
 step = 0
 c_game = 1
@@ -77,23 +78,21 @@ rewards = 0
 steps = 0
 
 while 1:
-        action, _ = model.predict(state, deterministic=0)
-        state, reward, done, _, info = env.step(action)
+        action, _ = model.predict(state, deterministic=1)
+        state, reward, done, info = eval_env.step(action)
         rewards += reward
         step += 1
         
         if done:
                 print(f'Game {c_game}: total_reward={rewards}, length={step}')
                 steps += step
-                state, info = env.reset()
+                state = eval_env.reset()
                 step = 0
                 c_game += 1
                 avg_reward += rewards/num_test
                 rewards = 0
-                if reward == 10:
+                if reward == 100:
                         success += 1
-        if render:
-                env.render()
         
         if c_game>=num_test:
                 print(f'Success rate: {success/num_test}, mean ep length: {steps/num_test}')

@@ -123,12 +123,12 @@
     </body>
   </worldbody>
   <actuator>
-    <position name="left_hip_motor" joint="left_hip" ctrlrange="-5 5" />
-    <position name="left_knee_motor" joint="left_knee" ctrlrange="-5 5"/>
-    <motor name="left_ankle_motor" joint="left_ankle" ctrlrange="-40 40"/>
-    <position name="right_hip_motor" joint="right_hip" ctrlrange="-5 5" />
-    <position name="right_knee_motor" joint="right_knee" ctrlrange="-5 5"/>
-    <motor name="right_ankle_motor" joint="right_ankle" ctrlrange="-40 40"/>
+    <position name="left_hip_motor" joint="left_hip" ctrlrange="-10 10" />
+    <position name="left_knee_motor" joint="left_knee" ctrlrange="-10 10"/>
+    <motor name="left_ankle_motor" joint="left_ankle" ctrlrange="-10 10"/>
+    <position name="right_hip_motor" joint="right_hip" ctrlrange="-10 10" />
+    <position name="right_knee_motor" joint="right_knee" ctrlrange="-10 10"/>
+    <motor name="right_ankle_motor" joint="right_ankle" ctrlrange="-10 10"/>
 
 <!--    <motor name="left_hip_motor" joint="left_hip" />-->
 <!--    <motor name="left_knee_motor" joint="left_knee" />-->
