@@ -41,6 +41,7 @@ class JumpEnv(MujocoEnv, utils.EzPickle):
         healthy_reward=.1,
         healthy_z_range=0.2,
         reset_noise_scale=0.1,
+        fixed_height = True,
         **kwargs
     ):
         utils.EzPickle.__init__(**locals())
@@ -52,6 +53,7 @@ class JumpEnv(MujocoEnv, utils.EzPickle):
         self.c_step = 0
         self.obs = None
         self.max_step = max_step
+        self.fixed_height = fixed_height
 
         MujocoEnv.__init__(self, xml_file, 5, observation_space=None, default_camera_config=DEFAULT_CAMERA_CONFIG, **kwargs)
         self.metadata = {
@@ -250,12 +252,12 @@ class JumpEnv(MujocoEnv, utils.EzPickle):
 
     # 重置模型
     def reset_model(self):
-        fixed_height = 0
+        
         self.c_step = 0
         qpos = self.init_qpos
         qvel = self.init_qvel
         # reset target
-        self.height = 0.05 if fixed_height else random.random()*0.05+0.05
+        self.height = 0.05 if self.fixed_height else random.random()*0.05+0.05
         mpos = np.array([0,0,self.height-0.2])
         self.data.mocap_pos = mpos
         # reset inital robot position

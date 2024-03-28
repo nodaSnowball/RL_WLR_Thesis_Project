@@ -62,13 +62,13 @@
       <geom name="base3" size="0.048 0.0175" pos="0.017241 0.106 0.0613" quat="0.499998 -0.500002 0.5 0.5" type="cylinder" rgba="0.75294 0 0 0.000987654321"/>
       <geom name="base4" size="0.048 0.0175" pos="0.017241 -0.106 0.0613" quat="0.499998 -0.500002 0.5 0.5" type="cylinder" rgba="0.75294 0 0 0.000987654321"/>
       <site name="imu" pos="0 0 0"/>
-      <site name="lidar01" pos="0   -.30  .15"   zaxis="1 0 0"/>
-      <site name="lidar02" pos="0   -.20  .15"   zaxis="1 0 0"/>
-      <site name="lidar03" pos="0   -.10  .15"   zaxis="1 0 0"/>
+      <site name="lidar01" pos="0   -.30  .15"   zaxis=".7071 -.7071 0"/>
+      <site name="lidar02" pos="0   -.20  .15"   zaxis=".8660 -.5000 0"/>
+      <site name="lidar03" pos="0   -.10  .15"   zaxis=".9659 -.2588 0"/>
       <site name="lidar04" pos="0   0.00  .15"   zaxis="1 0 0"/>
-      <site name="lidar05" pos="0   0.10  .15"   zaxis="1 0 0"/>
-      <site name="lidar06" pos="0   0.20  .15"  zaxis="1 0 0"/>
-      <site name="lidar07" pos="0   0.30  .15" zaxis="1 0 0"/>
+      <site name="lidar05" pos="0   0.10  .15"   zaxis=".9659 .2588 0"/>
+      <site name="lidar06" pos="0   0.20  .15"  zaxis=".8660 .5000 0"/>
+      <site name="lidar07" pos="0   0.30  .15" zaxis=".1 .1 0"/>
       <site name="lidar08" pos="0   -.30  .10" zaxis="1 0 0"/>
       <site name="lidar09" pos="0   -.20  .10" zaxis="1 0 0"/>
       <site name="lidar10" pos="0   -.10  .10" zaxis="1 0 0"/>
@@ -90,34 +90,34 @@
       <site name="lidar26" pos="0   0.10  .00" zaxis="1 0 0"/>
       <site name="lidar27" pos="0   0.20  .00" zaxis="1 0 0"/>
       <site name="lidar28" pos="0   0.30  .00" zaxis="1 0 0"/>
-      <site name="lidar29" pos="0   -.30  -.05" zaxis="1 0 0"/>
-      <site name="lidar30" pos="0   -.20  -.05" zaxis="1 0 0"/>
-      <site name="lidar31" pos="0   -.10  -.05" zaxis="1 0 0"/>
-      <site name="lidar32" pos="0   0.00  -.05" zaxis="1 0 0"/>
-      <site name="lidar33" pos="0   0.10  -.05" zaxis="1 0 0"/>
-      <site name="lidar34" pos="0   0.20  -.05" zaxis="1 0 0"/>
-      <site name="lidar35" pos="0   0.30  -.05" zaxis="1 0 0"/>
-      <site name="lidar36" pos="0   -.30  -.10" zaxis="1 0 0"/>
-      <site name="lidar37" pos="0   -.20  -.10" zaxis="1 0 0"/>
-      <site name="lidar38" pos="0   -.10  -.10" zaxis="1 0 0"/>
-      <site name="lidar39" pos="0   0.00  -.10" zaxis="1 0 0"/>
-      <site name="lidar40" pos="0   0.10  -.10" zaxis="1 0 0"/>
-      <site name="lidar41" pos="0   0.20  -.10" zaxis="1 0 0"/>
-      <site name="lidar42" pos="0   0.30  -.10" zaxis="1 0 0"/>
-      <site name="lidar43" pos="0   -.30  -.15" zaxis="1 0 0"/>
-      <site name="lidar44" pos="0   -.20  -.15" zaxis="1 0 0"/>
-      <site name="lidar45" pos="0   -.10  -.15" zaxis="1 0 0"/>
-      <site name="lidar46" pos="0   0.00  -.15" zaxis="1 0 0"/>
-      <site name="lidar47" pos="0   0.10  -.15" zaxis="1 0 0"/>
-      <site name="lidar48" pos="0   0.20  -.15" zaxis="1 0 0"/>
-      <site name="lidar49" pos="0   0.30  -.15" zaxis="1 0 0"/>
-      <site name="lidar50" pos="0   -.30  -.20" zaxis="1 0 0"/>
-      <site name="lidar51" pos="0   -.20  -.20" zaxis="1 0 0"/>
-      <site name="lidar52" pos="0   -.10  -.20" zaxis="1 0 0"/>
-      <site name="lidar53" pos="0   0.00  -.20" zaxis="1 0 0"/>
-      <site name="lidar54" pos="0   0.10  -.20" zaxis="1 0 0"/>
-      <site name="lidar55" pos="0   0.20  -.20" zaxis="1 0 0"/>
-      <site name="lidar56" pos="0   0.30  -.20" zaxis="1 0 0"/>
+      <site name="lidar29" pos="0   -.30  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar30" pos="0   -.20  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar31" pos="0   -.10  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar32" pos="0   0.00  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar33" pos="0   0.10  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar34" pos="0   0.20  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar35" pos="0   0.30  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar36" pos="0   -.30  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar37" pos="0   -.20  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar38" pos="0   -.10  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar39" pos="0   0.00  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar40" pos="0   0.10  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar41" pos="0   0.20  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar42" pos="0   0.30  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar43" pos="0   -.30  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar44" pos="0   -.20  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar45" pos="0   -.10  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar46" pos="0   0.00  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar47" pos="0   0.10  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar48" pos="0   0.20  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar49" pos="0   0.30  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar50" pos="0   -.30  -.20" zaxis=".8660 0 -.5"/>
+      <site name="lidar51" pos="0   -.20  -.20" zaxis=".8660 0 -.5"/>
+      <site name="lidar52" pos="0   -.10  -.20" zaxis=".8660 0 -.5"/>
+      <site name="lidar53" pos="0   0.00  -.20" zaxis=".8660 0 -.5"/>
+      <site name="lidar54" pos="0   0.10  -.20" zaxis=".8660 0 -.5"/>
+      <site name="lidar55" pos="0   0.20  -.20" zaxis=".8660 0 -.5"/>
+      <site name="lidar56" pos="0   0.30  -.20" zaxis=".8660 0 -.5"/>
 
       <body name="left_thigh" pos="0.017241 0.13399 0.0613" euler="-1.57 0 2.35">
         <inertial pos="0.17494 0.0025294 0.012308" quat="0.0283574 0.728032 0.00169629 0.684954" mass="1.3343" diaginertia="0.00985328 0.00920167 0.00123438"/>

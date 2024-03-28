@@ -35,7 +35,7 @@ os.makedirs(model_dir, exist_ok=True)
 os.makedirs(log_dir, exist_ok=True)
 def make_env(n=2000, render_mode=None, camera_id=None):
         def _init():
-                env = gym.make(args.env_name, max_step=n, healthy_reward=.5, render_mode=render_mode, camera_id=camera_id)
+                env = gym.make(args.env_name, max_step=n, healthy_reward=.5, render_mode=render_mode, fixed_height=True, camera_id=camera_id)
                 return env
         return _init
 # Environment
@@ -48,8 +48,10 @@ eval_env = DummyVecEnv([make_env(500, render_mode='human', camera_id=0) for _ in
 policy_kwargs = dict(activation_fn=torch.nn.ReLU,
                      net_arch=dict(pi=[512, 512, 256], qf=[512, 512, 256]))
 model = SAC('MlpPolicy', env, learning_rate=args.lr, verbose=0, tensorboard_log=log_dir, policy_kwargs=policy_kwargs)
-model_path = os.path.join(os.path.dirname(__file__), 'test_model/best_model')
+# model_path = os.path.join(os.path.dirname(__file__), 'test_model/continue')
 # model = SAC.load(model_path,env)
+
+# train
 ec = EvalCallback(eval_env, eval_freq=2000, n_eval_episodes=20, deterministic=0, render=1, 
                   best_model_save_path=model_dir, log_path=log_dir)
 cc = CheckpointCallback(save_freq=int(5e4), save_path=model_dir,
