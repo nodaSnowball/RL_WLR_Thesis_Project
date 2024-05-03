@@ -5,12 +5,13 @@ This project is a simulation of a two-legged-wheeled robot based on a deep reinf
 
 ## Environment Configuration
 The project was done on Ubuntu20.04 with the following Python versions and library versions:
-* Python 3.7.10
-* MuJoco 210
-* gym 0.21.0
-* mujoco-py 2.1.2.14
-* Pytorch 1.10.0
-* numpy 1.21.6
+* Python 3.7.1
+* MuJoco 2.3.6
+* stable-baselines3 2.0.0
+* gymasium 0.28.1
+* Pytorch 1.11.0 + cu113
+* tensorboard 2.10.0
+* imageio
 
 ## Clarification
 The project consists of three folders, a main file, a test file, and four other function files. These programs can be divided into three parts: the robot environment, the results, and the algorithms.
