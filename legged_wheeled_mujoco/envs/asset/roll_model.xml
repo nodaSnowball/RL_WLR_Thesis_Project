@@ -3,9 +3,9 @@
   <option timestep="0.002" integrator="RK4" gravity="0 0 -9.806" solver="Newton" noslip_iterations="0"/>
   <size njmax="10000" nconmax="10000"/>
   <default>
-    <geom contype="1" conaffinity="1" friction="0.6 0.3 0.3" rgba="0.5 0.6 0.7 1" margin="0.001" group="0"/>
-    <joint limited="true" frictionloss="0.5" damping="45" armature="0.1"/>
+    <geom contype="1" conaffinity="1" rgba="0.5 0.6 0.7 1" margin="0.001" group="0"/>
     <position gear='20' kp='10' ctrllimited="true" ctrlrange="-8 8"/>
+    <joint limited="true" frictionloss="0.5" damping="45" armature="0.1"/>
   </default>
 
   <asset>
@@ -38,25 +38,38 @@
   <worldbody>
     <light directional="true" diffuse=".8 .8 .8" pos="0 0 10" dir="0 0 -10"/>
     <light pos="0.5 -.4 1." dir="1 2 -1.5" diffuse=".6 .6 .6"/>
-    <camera name="top" pos="0. 0. 20." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
-    <camera name="left" pos="0. 5 0.3" xyaxes="-1. 0. 0. 0. 0. 1."/>
-    <camera name="right" pos="0. -5 0.3" xyaxes="1. 0. 0. 0. 0. 1."/>
-    <camera name="track" mode="trackcom" fovy="45" pos="0.5 -1. 0.35" xyaxes="0.866 0.5 0 0 0 1"/>
-    <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid"/>
-    <body name='mocap' mocap='true' pos='0 0 .2'>
-      <geom name="plat1" type="box" size="0.5 2.5 .2" pos="0 0 0" rgba=".8 .8 .8 1"/>
-      <!-- <geom name="plat2" type="box" size="0.5 2.5 .2" pos="1.5 0 0" rgba=".8 .8 .8 1"/> -->
-      <!-- <geom name="stair1" type="mesh" mesh="stair1" pos="0.0 0 -0.05"/>
-      <geom name="stair2" type="mesh" mesh="stair2" pos="0.2 0 -0.05"/>
-      <geom name="stair3" type="mesh" mesh="stair3" pos="0.4 0 -0.05"/>
-      <geom name="stair4" type="mesh" mesh="stair4" pos="0.6 0 -0.05"/>
-      <geom name="stair5" type="mesh" mesh="stair5" pos="0.8 0 -0.05"/> -->
-      <geom name="end" type="cylinder" size="0.1 0.04 0" pos="1.5 0 0" rgba="0 1 0 1" contype="0" conaffinity="0"/>
+    <camera name="top" mode='targetbody' target='base_link' pos="-8. -8. 10." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
+    <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid" conaffinity='0' solref='0 -1000'/>
+
+    <body name='end_ref' pos='6 3 0'>
+      <joint name='end_x' type='slide' axis='1 0 0' limited='true' range='-20 20' />
+      <joint name='end_y' type='slide' axis='0 1 0' limited='true' range='-20 20' />
+      <geom name="end" type="cylinder" pos="-0 -0 .0" size="0.2 0.01 0" rgba="0. 0.8 0. 1" contype='0' conaffinity="0"/>
     </body>
+
+    <body name='obstacles1' mocap='true' pos='-3 -3 0'>
+      <geom name="cube1" type="box" size="0.5 .5 2" pos="1.5 0 0" rgba=".6 .6 .6 1"/>
+      <geom name="cube2" type="box" size="0.5 .5 2" pos="-2 1 0" rgba=".6 .6 .6 1"/>
+    </body>
+    <body name='obstacles2' mocap='true' pos='-3 3 0' euler='0 0 1.57'>
+      <geom name="cube21" type="box" size="0.5 .5 2" pos="1.5 0 0" rgba=".6 .6 .6 1"/>
+      <geom name="cube22" type="box" size="0.5 .5 2" pos="-2 1 0" rgba=".6 .6 .6 1"/>
+    </body>
+    <body name='obstacles3' mocap='true' pos='3 -3 0' euler='0 0 -1.57'>
+      <geom name="cube31" type="box" size="0.5 .5 2" pos="1.5 0 0" rgba=".6 .6 .6 1"/>
+      <geom name="cube32" type="box" size="0.5 .5 2" pos="-1.5 0 0" rgba=".6 .6 .6 1"/>
+    </body>
+    <body name='obstacles4' mocap='true' pos='3 3 0' euler='0 0 -1.57'>
+      <geom name="cube41" type="box" size="0.5 .5 2" pos="1.5 0 0" rgba=".6 .6 .6 1"/>
+      <geom name="cube42" type="box" size="0.5 .5 2" pos="-1.5 0 0" rgba=".6 .6 .6 1"/>
+    </body>
+
     <!-- ======= ROBOT ======= -->
-    <body name="base_link" pos="-1.5 0 0.35" euler="0 0 0">
+    <body name="base_link" pos="-6. 0. 0.35" euler="0 0 0">
+      <camera name="track" mode="track" fovy="45" pos="1 -2. 0.2" xyaxes="0.866 0.5 0 0 0 1"/>
       <inertial pos="0.018885 0.00062964 0.06018" quat="-0.064773 0.618315 0.0968439 0.777246" mass="4.6733" diaginertia="0.054592 0.0348635 0.0323885"/>
-      <joint name="floating_base" type="free" limited="false" frictionloss=".001" damping=".01" armature="0."/>
+      <joint name="floating_base" type="free" limited="false" frictionloss="0.001" damping="0.01" armature="0."/>
+
       <geom name="base1" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0 0 1" mesh="base_link"/>
       <geom name="base2" size="0.17 0.077 0.07" pos="0.02 0 0.06" type="box" rgba="0.75294 0 0 0.000987654321"/>
       <geom name="base3" size="0.048 0.0175" pos="0.017241 0.106 0.0613" quat="0.499998 -0.500002 0.5 0.5" type="cylinder" rgba="0.75294 0 0 0.000987654321"/>
@@ -118,21 +131,20 @@
       <site name="lidar54" pos="0   0.10  -.20" zaxis=".8660 0 -.5"/>
       <site name="lidar55" pos="0   0.20  -.20" zaxis=".8660 0 -.5"/>
       <site name="lidar56" pos="0   0.30  -.20" zaxis=".8660 0 -.5"/>
-
       <body name="left_thigh" pos="0.017241 0.13399 0.0613" euler="-1.57 0 2.35">
         <inertial pos="0.17494 0.0025294 0.012308" quat="0.0283574 0.728032 0.00169629 0.684954" mass="1.3343" diaginertia="0.00985328 0.00920167 0.00123438"/>
-        <joint name="left_hip" pos="0 0 0" axis="0 0 1" range="-15 15"/>
+        <joint name="left_hip" pos="0 0 0" axis="0 0 1" range="-1.5 1.5"/>
         <geom name="left_thigh1" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.89804 0.91765 0 1" mesh="left_thigh"/>
         <geom name="left_thigh2" size="0.1 0.035 0.005" pos="0.085 0 0" type="box" rgba="0 0.91765 0.92941 0.000987654321"/>
         <geom name="left_thigh3" size="0.048 0.0175" pos="0.21 0 -0.02375" type="cylinder" rgba="0 0.91765 0.92941 0.000987654321"/>
         <body name="left_shin" pos="0.21 0 0.0475" euler="0 0 -1.15">
           <inertial pos="0.15612 0.00046249 0.020119" quat="-0.0169558 0.755863 -0.00997261 0.654434" mass="0.94398" diaginertia="0.00396686 0.00358627 0.000682696"/>
-          <joint name="left_knee" pos="0 0 0" axis="0 0 1" range="-15 15"/>
+          <joint name="left_knee" pos="0 0 0" axis="0 0 1" range="-1.5 1.5"/>
           <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.89804 0.91765 0 1" mesh="left_shin"/>
           <geom size="0.1 0.035 0.005" pos="0.1 0 0" type="box" rgba="0.89804 0 0.92941 0.000987654321"/>
           <body name="left_wheel" pos="0.18 0 0.0305">
             <inertial pos="0 0 0.0012686" quat="0.5 0.5 -0.5 0.5" mass="0.44583" diaginertia="0.0014254 0.00076522 0.00076522"/>
-            <!-- <joint name="left_ankle" pos="0 0 0" axis="0 0 1" limited="false"/> -->
+            <joint name="left_ankle" pos="0 0 0" axis="0 0 1" limited="false"/>
             <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0 0 1" mesh="left_wheel"/>
             <geom size="0.065 0.02" type="cylinder" rgba="0 0 0.75294 0.000987654321"/>
           </body>
@@ -140,18 +152,18 @@
       </body>
       <body name="right_thigh" pos="0.017241 -0.13501 0.0613" euler="-1.57 0 2.35">
         <inertial pos="0.17494 0.0025279 -0.012308" quat="-0.00169159 0.684955 -0.0283402 0.728032" mass="1.3343" diaginertia="0.00985329 0.00920166 0.00123441"/>
-        <joint name="right_hip" pos="0 0 0" axis="0 0 1" range="-15 15"/>
+        <joint name="right_hip" pos="0 0 0" axis="0 0 1" range="-1.5 1.5"/>
         <geom name="right_thigh1" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.89804 0.91765 0 1" mesh="right_thigh"/>
         <geom name="right_thigh2" size="0.1 0.035 0.005" pos="0.085 0 0" type="box" rgba="0 0.91765 0.92941 0.000987654321"/>
         <geom name="right_thigh3" size="0.048 0.0175" pos="0.21 0 0.02375" type="cylinder" rgba="0 0.91765 0.92941 0.000987654321"/>
         <body name="right_shin" pos="0.21 0 -0.0475" euler="0 0 -1.15">
           <inertial pos="0.15612 0.00046556 -0.020119" quat="0.00996675 0.654435 0.0169079 0.755863" mass="0.94398" diaginertia="0.00396686 0.00358627 0.000682701"/>
-          <joint name="right_knee" pos="0 0 0" axis="0 0 1" range="-15 15"/>
+          <joint name="right_knee" pos="0 0 0" axis="0 0 1" range="-1.5 1.5"/>
           <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.89804 0.91765 0 1" mesh="right_shin"/>
           <geom size="0.1 0.035 0.005" pos="0.1 0 0" type="box" rgba="0.89804 0 0.92941 0.000987654321"/>
           <body name="right_wheel" pos="0.18 0 -0.0305">
             <inertial pos="0 0 -0.0012686" quat="0.5 0.5 -0.5 0.5" mass="0.44583" diaginertia="0.0014254 0.00076522 0.00076522"/>
-            <!-- <joint name="right_ankle" pos="0 0 0" axis="0 0 1" limited="false"/> -->
+            <joint name="right_ankle" pos="0 0 0" axis="0 0 1" limited="false"/>
             <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0 0 1" mesh="right_wheel"/>
             <geom size="0.065 0.02" type="cylinder" rgba="0 0 0.75294 0.000987654321"/>
           </body>
@@ -162,10 +174,10 @@
   <actuator>
     <position name="left_hip_motor" joint="left_hip"/>
     <position name="left_knee_motor" joint="left_knee"/>
-    <!-- <motor name="left_ankle_motor" joint="left_ankle" gear='50' ctrlrange='-7 7'/> -->
+    <motor name="left_ankle_motor" joint="left_ankle" gear='50' ctrlrange='-7 7'/>
     <position name="right_hip_motor" joint="right_hip"/>
     <position name="right_knee_motor" joint="right_knee"/>
-    <!-- <motor name="right_ankle_motor" joint="right_ankle" gear='50' ctrlrange='-7 7'/> -->
+    <motor name="right_ankle_motor" joint="right_ankle" gear='50' ctrlrange='-7 7'/>
   </actuator>
 
   <sensor>

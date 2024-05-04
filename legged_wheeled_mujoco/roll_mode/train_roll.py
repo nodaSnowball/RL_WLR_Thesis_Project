@@ -8,14 +8,14 @@ import itertools
 import torch
 from torch.utils.tensorboard import SummaryWriter
 import envs.register
-from walk_mode.agent_walk import CustomExtractor
+from roll_mode.agent_roll import CustomExtractor
 from stable_baselines3 import SAC, TD3, PPO
 from stable_baselines3.common.callbacks import EvalCallback,CheckpointCallback,CallbackList
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize
 from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env_name', default="Walk-v0")
+parser.add_argument('--env_name', default="Roll-v0")
 parser.add_argument('--input', default="short", type=str)
 parser.add_argument('--alg', default="sac", type=str)
 parser.add_argument('--hr', default=0.3, type=float,
@@ -24,13 +24,12 @@ parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor for reward (default: 0.99)')
 parser.add_argument('--lr', type=float, default=5e-4)
 parser.add_argument('--seed', type=int, default=123456)
-parser.add_argument('--batch_size', type=int, default=256)
 parser.add_argument('--num_process', type=int, default=10)
 parser.add_argument('--num_steps', type=int, default=10000001)
 parser.add_argument('--random_reset', type=int, default=0)
 parser.add_argument('--replay_size', type=int, default=1000000, metavar='N',
                     help='size of replay buffer (default: 10000000)')
-parser.add_argument('--suffix', type=str, default='ctrl_range_test')
+parser.add_argument('--suffix', type=str, default='reset_target')
 args = parser.parse_args()
 num_envs = args.num_process
 start_time = time.strftime("%m%d%H")
@@ -45,7 +44,7 @@ def make_env(n=2000, render_mode=None):
                 return env
         return _init
 # Environment
-env = DummyVecEnv([make_env(2000) for _ in range(num_envs)])
+env = DummyVecEnv([make_env(2000) for _ in range(10)])
 # env = VecNormalize(env)
 eval_env = DummyVecEnv([make_env(2000, render_mode='human') for _ in range(1)])
 # eval_env = VecNormalize(eval_env)
@@ -58,7 +57,7 @@ if args.input == 'long':
         if args.alg == 'sac':
                 policy_kwargs = dict(
                         features_extractor_class=CustomExtractor,
-                        features_extractor_kwargs=dict(args=args, features_dim=600, ),  # 736, 1472, 1024
+                        features_extractor_kwargs=dict(args=args, features_dim=1024, ),  # 736, 1472, 1024
                         activation_fn=torch.nn.ReLU,
                         normalize_images=False,
                         net_arch=dict(pi=[512, 256, 128], qf=[256, 128]))
@@ -66,7 +65,7 @@ if args.input == 'long':
         if args.alg == 'ppo':
                 policy_kwargs = dict(
                         features_extractor_class=CustomExtractor,
-                        features_extractor_kwargs=dict(args=args, features_dim=600, ),  # 736,1472
+                        features_extractor_kwargs=dict(args=args, features_dim=1024, ),  # 736,1472
                         activation_fn=torch.nn.ReLU,
                         normalize_images=False,
                         net_arch=dict(pi=[512, 256, 128], vf=[256, 128]))
@@ -78,12 +77,12 @@ if args.input == 'short':
                 policy_kwargs = dict(
                         activation_fn=torch.nn.ReLU,
                         net_arch=dict(pi=[512, 512, 256], qf=[256, 512, 256]))
-                model = SAC('MlpPolicy', env, learning_rate=args.lr, verbose=0, tensorboard_log=log_dir, policy_kwargs=policy_kwargs, buffer_size=int(5e5), seed=1)
+                model = SAC('MlpPolicy', env, learning_rate=args.lr, verbose=0, tensorboard_log=log_dir, policy_kwargs=policy_kwargs, seed=1)
         if args.alg == 'ppo':
                 policy_kwargs = dict(
                         activation_fn=torch.nn.ReLU,
                         net_arch=dict(pi=[512, 512, 256], vf=[256, 512, 256]))
-                model = PPO('MlpPolicy', env, learning_rate=args.lr, verbose=0, tensorboard_log=log_dir, policy_kwargs=policy_kwargs, buffer_size=int(5e5), seed=1)
+                model = PPO('MlpPolicy', env, learning_rate=args.lr, verbose=0, tensorboard_log=log_dir, policy_kwargs=policy_kwargs, seed=1)
         
 # Load model
 # model_path = os.path.join(os.path.dirname(__file__), 'test_model/continue')
@@ -96,9 +95,8 @@ ec = EvalCallback(eval_env, eval_freq=20000/num_envs, n_eval_episodes=20, determ
 cc = CheckpointCallback(save_freq=int(5e4/num_envs), save_path=model_dir,
                                              name_prefix='checkpoint_model')
 print(f'Training start at {start_time}. Learning rate:{args.lr} healthy reward:{args.hr} env: {args.env_name} algorithm: {args.alg}\ncomment:{args.suffix}')
-model.learn(total_timesteps=1e7, callback=CallbackList([ec,cc]))
+model.learn(total_timesteps=5e6, callback=CallbackList([ec,cc]))
 model.save(model_dir+'/final_model')
 end_time = time.strftime('%m%d%H')
-print(f'Training end at {end_time}. Learning rate:{args.lr} healthy reward:{args.hr} env: {args.env_name} algorithm: {args.alg}\ncomment:{args.suffix}')
 
 

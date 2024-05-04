@@ -4,8 +4,7 @@
   <size njmax="10000" nconmax="10000"/>
   <default>
     <geom contype="1" conaffinity="1" rgba="0.5 0.6 0.7 1" margin="0.001" group="0"/>
-    <motor gear="20" ctrllimited="true" ctrlrange="-40 40" />
-    <position gear="10" ctrllimited="true" kp="5"/>
+    <position gear='20' kp='10' ctrllimited="true" ctrlrange="-8 8"/>
     <joint limited="true" frictionloss="0.5" damping="45" armature="0.1"/>
   </default>
 
@@ -32,17 +31,14 @@
 
   <visual>
     <global offwidth="1920" offheight="1080"/>
-    <rgba com="0.502 1.0 0 0.5" contactforce="0.98 0.4 0.4 0.7" contactpoint="1.0 1.0 0.6 0.4"/>
+    <rgba com="0.502 1.0 0 0.5" contactforce="0.98 0.4 0.4 0.7" contactpoint="1.0 1.0 0.6 0.4" rangefinder="0 0 0 0"/>
     <scale com="0.2" forcewidth="0.035" contactwidth="0.10" contactheight="0.04"/>
   </visual>
 
   <worldbody>
     <light directional="true" diffuse=".8 .8 .8" pos="0 0 10" dir="0 0 -10"/>
     <light pos="0.5 -.4 1." dir="1 2 -1.5" diffuse=".6 .6 .6"/>
-    <camera name="top" pos="0. 0. 2." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
-    <camera name="left" pos="0. 1 0.3" xyaxes="-1. 0. 0. 0. 0. 1."/>
-    <camera name="right" pos="0. -1 0.3" xyaxes="1. 0. 0. 0. 0. 1."/>
-    <camera name="track" mode="trackcom" fovy="45" pos="0.5 -1. 0.35" xyaxes="0.866 0.5 0 0 0 1"/>
+    <camera name="top" mode='targetbody' target='base_link' pos="3. 3. 8." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
     <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid" solimp=".9 .95 .001" solref='-10000 -1000'/>
     <body name='end_ref' pos='0 0 0'>
       <joint name='end_x' type='slide' axis='1 0 0' limited='true' range='-20 20' />
@@ -50,48 +46,128 @@
       <geom name="end" type="cylinder" pos="-0 -0 .0" size="0.2 0.01 0" rgba="0. 0.8 0. 1" contype='0' conaffinity="0"/>
     </body>
 
-    <body name="mocap" pos="2 1 0" euler="0 0 0" mocap="true">
-      <geom name="o1" type="box" pos="0 0 0" size="0.3 0.5 0.05" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o2" type="box" pos="2 8 0" size="0.5 0.1 0.04" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o3" type="box" pos="5 -2 0" size="0.4 0.6 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o4" type="box" pos="-3 6 0" size="0.3 0.4 0.05" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o5" type="box" pos="-9 3 0" size="0.4 0.3 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o6" type="box" pos="7 -7 0" size="0.5 0.2 0.05" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o7" type="box" pos="4 2 0" size="0.5 0.5 0.05" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o8" type="box" pos="-2 -9 0" size="0.2 0.7 0.07" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o9" type="box" pos="-6 -8 0" size="0.2 0.3 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o10" type="box" pos="7 -9 0" size="0.3 0.6 0.04" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o11" type="box" pos="-5 3 0" size="0.5 0.2 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o12" type="box" pos="-3 -2 0" size="0.7 0.4 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o13" type="box" pos="-4.5 8 0" size="0.2 0.4 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o14" type="box" pos="-6.3 4 0" size="0.6 0.4 0.07" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o15" type="box" pos="-1 3 0" size="0.2 0.4 0.04" rgba="0. 0 .5 1" conaffinity="1"/>
-      <geom name="o16" type="box" pos="6 -9 0" size="0.5 0.4 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+    <body name="bumps" pos="-3 -3 0" euler="0 0 0" mocap="true">
+      <geom name="o1" type="box" pos="-.5 .5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o2" type="box" pos="2.5 -1.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o3" type="box" pos="-.5 -2.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o4" type="box" pos="1.5 1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o5" type="box" pos="-1.5 -1.5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o6" type="box" pos="-1.5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o7" type="box" pos=".5 2.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o8" type="box" pos="1.5 -1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o9" type="box" pos=".5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o10" type="box" pos="2.5 1.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+    </body>
+    <body name="bumps2" pos="-3 3 0" euler="0 0 1.57" mocap="true">
+      <geom name="o11" type="box" pos="-.5 .5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o12" type="box" pos="2.5 -1.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o13" type="box" pos="-.5 -2.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o14" type="box" pos="1.5 1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o15" type="box" pos="-1.5 -1.5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o16" type="box" pos="-1.5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o17" type="box" pos=".5 2.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o18" type="box" pos="1.5 -1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o19" type="box" pos=".5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o20" type="box" pos="2.5 1.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+    </body>
+    <body name="bumps3" pos="3 -3 0" euler="0 0 3.14" mocap="true">
+      <geom name="o21" type="box" pos="-.5 .5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o22" type="box" pos="2.5 -1.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o23" type="box" pos="-.5 -2.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o24" type="box" pos="1.5 1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o25" type="box" pos="-1.5 -1.5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o26" type="box" pos="-1.5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o27" type="box" pos=".5 2.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o28" type="box" pos="1.5 -1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o29" type="box" pos=".5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o30" type="box" pos="2.5 1.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+    </body>
+    <body name="bumps4" pos="3 3 0" euler="0 0 -1.57" mocap="true">
+      <geom name="o31" type="box" pos="-.5 .5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o32" type="box" pos="2.5 -1.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o33" type="box" pos="-.5 -2.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o34" type="box" pos="1.5 1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o35" type="box" pos="-1.5 -1.5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o36" type="box" pos="-1.5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o37" type="box" pos=".5 2.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o38" type="box" pos="1.5 -1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o39" type="box" pos=".5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o40" type="box" pos="2.5 1.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
     </body>
 
     <!-- ======= ROBOT ======= -->
-    <body name="base_link" pos="-9 1 0.45" euler="0 0 0">
+    <body name="base_link" pos="-3 0 0.35" euler="0 0 0">
+    <camera name="track" mode="track" fovy="45" pos="1 -2. 0.2" xyaxes="0.866 0.5 0 0 0 1"/>
       <inertial pos="0.018885 0.00062964 0.06018" quat="-0.064773 0.618315 0.0968439 0.777246" mass="4.6733" diaginertia="0.054592 0.0348635 0.0323885"/>
       <joint name="floating_base" type="free" limited="false" frictionloss="0.001" damping="0.01" armature="0."/>
-<!--      <joint name="floating_base_xslide" type="slide" axis="1 0 0" limited="false" frictionloss="0.001" damping="0.01" armature="0.00"/>-->
-<!--      <joint name="floating_base_yslide" type="slide" axis="0 1 0" limited="false" frictionloss="0.001" damping="0.01" armature="0.00"/>-->
-<!--      <joint name="floating_base_zslide" type="slide" axis="0 0 1" limited="false" frictionloss="0.001" damping="0.01" armature="0.00"/>-->
-<!--      <joint name="floating_base_xhinge" axis="1 0 0" limited="false" frictionloss="0.0001" damping="0.01" armature="0.00"/>-->
-<!--      <joint name="floating_base_yhinge" axis="0 1 0" limited="false" frictionloss="0.001" damping="0.01" armature="0.00"/>-->
-<!--      <joint name="floating_base_zhinge" axis="0 0 1" limited="false" frictionloss="0.001" damping="0.01" armature="0.00"/>-->
-
       <geom name="base1" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0 0 1" mesh="base_link"/>
       <geom name="base2" size="0.17 0.077 0.07" pos="0.02 0 0.06" type="box" rgba="0.75294 0 0 0.000987654321"/>
       <geom name="base3" size="0.048 0.0175" pos="0.017241 0.106 0.0613" quat="0.499998 -0.500002 0.5 0.5" type="cylinder" rgba="0.75294 0 0 0.000987654321"/>
       <geom name="base4" size="0.048 0.0175" pos="0.017241 -0.106 0.0613" quat="0.499998 -0.500002 0.5 0.5" type="cylinder" rgba="0.75294 0 0 0.000987654321"/>
       <site name="imu" pos="0 0 0"/>
-      <body name="left_thigh" pos="0.017241 0.13399 0.0613" euler="-1.57 0 2.95">
+      <site name="lidar01" pos="0   -.30  .15"   zaxis=".7071 -.7071 0"/>
+      <site name="lidar02" pos="0   -.20  .15"   zaxis=".8660 -.5000 0"/>
+      <site name="lidar03" pos="0   -.10  .15"   zaxis=".9659 -.2588 0"/>
+      <site name="lidar04" pos="0   0.00  .15"   zaxis="1 0 0"/>
+      <site name="lidar05" pos="0   0.10  .15"   zaxis=".9659 .2588 0"/>
+      <site name="lidar06" pos="0   0.20  .15"  zaxis=".8660 .5000 0"/>
+      <site name="lidar07" pos="0   0.30  .15" zaxis=".1 .1 0"/>
+      <site name="lidar08" pos="0   -.30  .10" zaxis="1 0 0"/>
+      <site name="lidar09" pos="0   -.20  .10" zaxis="1 0 0"/>
+      <site name="lidar10" pos="0   -.10  .10" zaxis="1 0 0"/>
+      <site name="lidar11" pos="0   0.00  .10" zaxis="1 0 0"/>
+      <site name="lidar12" pos="0   0.10  .10" zaxis="1 0 0"/>
+      <site name="lidar13" pos="0   0.20  .10" zaxis="1 0 0"/>
+      <site name="lidar14" pos="0   0.30  .10" zaxis="1 0 0"/>
+      <site name="lidar15" pos="0   -.30  .05" zaxis="1 0 0"/>
+      <site name="lidar16" pos="0   -.20  .05" zaxis="1 0 0"/>
+      <site name="lidar17" pos="0   -.10  .05" zaxis="1 0 0"/>
+      <site name="lidar18" pos="0   0.00  .05" zaxis="1 0 0"/>
+      <site name="lidar19" pos="0   0.10  .05" zaxis="1 0 0"/>
+      <site name="lidar20" pos="0   0.20  .05" zaxis="1 0 0"/>
+      <site name="lidar21" pos="0   0.30  .05" zaxis="1 0 0"/>
+      <site name="lidar22" pos="0   -.30  .00" zaxis="1 0 0"/>
+      <site name="lidar23" pos="0   -.20  .00" zaxis="1 0 0"/>
+      <site name="lidar24" pos="0   -.10  .00" zaxis="1 0 0"/>
+      <site name="lidar25" pos="0   0.00  .00" zaxis="1 0 0"/>
+      <site name="lidar26" pos="0   0.10  .00" zaxis="1 0 0"/>
+      <site name="lidar27" pos="0   0.20  .00" zaxis="1 0 0"/>
+      <site name="lidar28" pos="0   0.30  .00" zaxis="1 0 0"/>
+      <site name="lidar29" pos="0   -.30  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar30" pos="0   -.20  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar31" pos="0   -.10  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar32" pos="0   0.00  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar33" pos="0   0.10  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar34" pos="0   0.20  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar35" pos="0   0.30  -.05" zaxis=".9659 0 -.2588"/>
+      <site name="lidar36" pos="0   -.30  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar37" pos="0   -.20  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar38" pos="0   -.10  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar39" pos="0   0.00  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar40" pos="0   0.10  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar41" pos="0   0.20  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar42" pos="0   0.30  -.10" zaxis=".8660 0 -.5"/>
+      <site name="lidar43" pos="0   -.30  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar44" pos="0   -.20  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar45" pos="0   -.10  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar46" pos="0   0.00  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar47" pos="0   0.10  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar48" pos="0   0.20  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar49" pos="0   0.30  -.15" zaxis=".8660 0 -.5"/>
+      <site name="lidar50" pos="0   -.30  -.20" zaxis=".8660 0 -.5"/>
+      <site name="lidar51" pos="0   -.20  -.20" zaxis=".8660 0 -.5"/>
+      <site name="lidar52" pos="0   -.10  -.20" zaxis=".8660 0 -.5"/>
+      <site name="lidar53" pos="0   0.00  -.20" zaxis=".8660 0 -.5"/>
+      <site name="lidar54" pos="0   0.10  -.20" zaxis=".8660 0 -.5"/>
+      <site name="lidar55" pos="0   0.20  -.20" zaxis=".8660 0 -.5"/>
+      <site name="lidar56" pos="0   0.30  -.20" zaxis=".8660 0 -.5"/>
+      <body name="left_thigh" pos="0.017241 0.13399 0.0613" euler="-1.57 0 2.35">
         <inertial pos="0.17494 0.0025294 0.012308" quat="0.0283574 0.728032 0.00169629 0.684954" mass="1.3343" diaginertia="0.00985328 0.00920167 0.00123438"/>
         <joint name="left_hip" pos="0 0 0" axis="0 0 1" range="-10 10"/>
         <geom name="left_thigh1" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.89804 0.91765 0 1" mesh="left_thigh"/>
         <geom name="left_thigh2" size="0.1 0.035 0.005" pos="0.085 0 0" type="box" rgba="0 0.91765 0.92941 0.000987654321"/>
         <geom name="left_thigh3" size="0.048 0.0175" pos="0.21 0 -0.02375" type="cylinder" rgba="0 0.91765 0.92941 0.000987654321"/>
-        <body name="left_shin" pos="0.21 0 0.0475" euler="0 0 -1.75">
+        <body name="left_shin" pos="0.21 0 0.0475" euler="0 0 -1.15">
           <inertial pos="0.15612 0.00046249 0.020119" quat="-0.0169558 0.755863 -0.00997261 0.654434" mass="0.94398" diaginertia="0.00396686 0.00358627 0.000682696"/>
           <joint name="left_knee" pos="0 0 0" axis="0 0 1" range="-10 10"/>
           <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.89804 0.91765 0 1" mesh="left_shin"/>
@@ -104,13 +180,13 @@
           </body>
         </body>
       </body>
-      <body name="right_thigh" pos="0.017241 -0.13501 0.0613" euler="-1.57 0 2.95">
+      <body name="right_thigh" pos="0.017241 -0.13501 0.0613" euler="-1.57 0 2.35">
         <inertial pos="0.17494 0.0025279 -0.012308" quat="-0.00169159 0.684955 -0.0283402 0.728032" mass="1.3343" diaginertia="0.00985329 0.00920166 0.00123441"/>
         <joint name="right_hip" pos="0 0 0" axis="0 0 1" range="-10 10"/>
         <geom name="right_thigh1" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.89804 0.91765 0 1" mesh="right_thigh"/>
         <geom name="right_thigh2" size="0.1 0.035 0.005" pos="0.085 0 0" type="box" rgba="0 0.91765 0.92941 0.000987654321"/>
         <geom name="right_thigh3" size="0.048 0.0175" pos="0.21 0 0.02375" type="cylinder" rgba="0 0.91765 0.92941 0.000987654321"/>
-        <body name="right_shin" pos="0.21 0 -0.0475" euler="0 0 -1.75">
+        <body name="right_shin" pos="0.21 0 -0.0475" euler="0 0 -1.15">
           <inertial pos="0.15612 0.00046556 -0.020119" quat="0.00996675 0.654435 0.0169079 0.755863" mass="0.94398" diaginertia="0.00396686 0.00358627 0.000682701"/>
           <joint name="right_knee" pos="0 0 0" axis="0 0 1" range="-10 10"/>
           <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.89804 0.91765 0 1" mesh="right_shin"/>
@@ -126,36 +202,71 @@
     </body>
   </worldbody>
   <actuator>
-    <position name="left_hip_motor" joint="left_hip" ctrlrange="-10 10" />
-    <position name="left_knee_motor" joint="left_knee" ctrlrange="-10 10"/>
-    <motor name="left_ankle_motor" joint="left_ankle" ctrlrange="-10 10"/>
-    <position name="right_hip_motor" joint="right_hip" ctrlrange="-10 10" />
-    <position name="right_knee_motor" joint="right_knee" ctrlrange="-10 10"/>
-    <motor name="right_ankle_motor" joint="right_ankle" ctrlrange="-10 10"/>
-
-<!--    <motor name="left_hip_motor" joint="left_hip" />-->
-<!--    <motor name="left_knee_motor" joint="left_knee" />-->
-<!--    <motor name="left_ankle_motor" joint="left_ankle" />-->
-<!--    <motor name="right_hip_motor" joint="right_hip" />-->
-<!--    <motor name="right_knee_motor" joint="right_knee" />-->
-<!--    <motor name="right_ankle_motor" joint="right_ankle" />-->
+    <position name="left_hip_motor" joint="left_hip"/>
+    <position name="left_knee_motor" joint="left_knee"/>
+    <motor name="left_ankle_motor" joint="left_ankle" gear='50' ctrlrange='-7 7'/>
+    <position name="right_hip_motor" joint="right_hip"/>
+    <position name="right_knee_motor" joint="right_knee"/>
+    <motor name="right_ankle_motor" joint="right_ankle" gear='50' ctrlrange='-7 7'/>
   </actuator>
 
   <sensor>
-    <!-- The sensor sequence cannot be changed -->
-    <jointpos name='target_x' joint='end_x' />
-    <jointpos name='target_y' joint='end_y' />
-    <framepos name='base_pos' objtype='body' objname='base_link' />
-    <framequat name='base_ori' objtype='body' objname='base_link' />
-    <jointpos name='left_hip_pos' joint='left_hip' />
-    <jointpos name='left_knee_pos' joint='left_knee' />
-    <jointpos name='right_hip_pos' joint='right_hip' />
-    <jointpos name='right_knee_pos' joint='right_knee' />
-    <jointvel name='left_wheel' joint='left_ankle' />
-    <jointvel name='right_wheel' joint='right_ankle' />
-    <velocimeter name="Base_Linear_vel" site="imu" />
-    <accelerometer name="Base_Linear_acc" site="imu" />
-    <gyro name='Base_Angular_vel' site='imu'/>
+    <rangefinder name="l01" site="lidar01"/>
+    <rangefinder name="l02" site="lidar02"/>
+    <rangefinder name="l03" site="lidar03"/>
+    <rangefinder name="l04" site="lidar04"/>
+    <rangefinder name="l05" site="lidar05"/>
+    <rangefinder name="l06" site="lidar06"/>
+    <rangefinder name="l07" site="lidar07"/>
+    <rangefinder name="l08" site="lidar08"/>
+    <rangefinder name="l09" site="lidar09"/>
+    <rangefinder name="l10" site="lidar10"/>
+    <rangefinder name="l11" site="lidar11"/>
+    <rangefinder name="l12" site="lidar12"/>
+    <rangefinder name="l13" site="lidar13"/>
+    <rangefinder name="l14" site="lidar14"/>
+    <rangefinder name="l15" site="lidar15"/>
+    <rangefinder name="l16" site="lidar16"/>
+    <rangefinder name="l17" site="lidar17"/>
+    <rangefinder name="l18" site="lidar18"/>
+    <rangefinder name="l19" site="lidar19"/>
+    <rangefinder name="l20" site="lidar20"/>
+    <rangefinder name="l21" site="lidar21"/>
+    <rangefinder name="l22" site="lidar22"/>
+    <rangefinder name="l23" site="lidar23"/>
+    <rangefinder name="l24" site="lidar24"/>
+    <rangefinder name="l25" site="lidar25"/>
+    <rangefinder name="l26" site="lidar26"/>
+    <rangefinder name="l27" site="lidar27"/>
+    <rangefinder name="l28" site="lidar28"/>
+    <rangefinder name="l29" site="lidar29"/>
+    <rangefinder name="l30" site="lidar30"/>
+    <rangefinder name="l31" site="lidar31"/>
+    <rangefinder name="l32" site="lidar32"/>
+    <rangefinder name="l33" site="lidar33"/>
+    <rangefinder name="l34" site="lidar34"/>
+    <rangefinder name="l35" site="lidar35"/>
+    <rangefinder name="l36" site="lidar36"/>
+    <rangefinder name="l37" site="lidar37"/>
+    <rangefinder name="l38" site="lidar38"/>
+    <rangefinder name="l39" site="lidar39"/>
+    <rangefinder name="l40" site="lidar40"/>
+    <rangefinder name="l41" site="lidar41"/>
+    <rangefinder name="l42" site="lidar42"/>
+    <rangefinder name="l43" site="lidar43"/>
+    <rangefinder name="l44" site="lidar44"/>
+    <rangefinder name="l45" site="lidar45"/>
+    <rangefinder name="l46" site="lidar46"/>
+    <rangefinder name="l47" site="lidar47"/>
+    <rangefinder name="l48" site="lidar48"/>
+    <rangefinder name="l49" site="lidar49"/>
+    <rangefinder name="l50" site="lidar42"/>
+    <rangefinder name="l51" site="lidar43"/>
+    <rangefinder name="l52" site="lidar44"/>
+    <rangefinder name="l53" site="lidar45"/>
+    <rangefinder name="l54" site="lidar46"/>
+    <rangefinder name="l55" site="lidar47"/>
+    <rangefinder name="l56" site="lidar48"/>
   </sensor>
 
 </mujoco>

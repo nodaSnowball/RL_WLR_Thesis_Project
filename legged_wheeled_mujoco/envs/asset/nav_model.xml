@@ -4,8 +4,9 @@
   <size njmax="10000" nconmax="10000"/>
   <default>
     <geom contype="1" conaffinity="1" friction="0.6 0.3 0.3" rgba="0.5 0.6 0.7 1" margin="0.001" group="0"/>
+    <motor gear="50" ctrllimited="true" ctrlrange="-80 80" />
     <joint limited="true" frictionloss="0.5" damping="45" armature="0.1"/>
-    <position gear='20' kp='10' ctrllimited="true" ctrlrange="-8 8"/>
+    <position ctrllimited='true' ctrlrange='-15 15' />
   </default>
 
   <asset>
@@ -32,27 +33,117 @@
   <visual>
     <global offwidth="1920" offheight="1080"/>
     <rgba com="0.502 1.0 0 0.5" contactforce="0.98 0.4 0.4 0.7" contactpoint="1.0 1.0 0.6 0.4" rangefinder="0 0 0 0"/>
+    <!-- <rgba com="0.502 1.0 0 0.5" contactforce="0.98 0.4 0.4 0.7" contactpoint="1.0 1.0 0.6 0.4"/> -->
     <scale com="0.2" forcewidth="0.035" contactwidth="0.10" contactheight="0.04"/>
   </visual>
 
   <worldbody>
-    <light directional="true" diffuse=".8 .8 .8" pos="0 0 10" dir="0 0 -10"/>
-    <light pos="0.5 -.4 1." dir="1 2 -1.5" diffuse=".6 .6 .6"/>
+    <light directional="true" diffuse=".6 .6 .6" pos="10 -10 30" dir="0 0 -10"/>
+    <!-- <light pos="10 -1 30" dir="1 2 -1.5" diffuse=".6 .6 .6"/> -->
     <camera name="top" pos="0. 0. 20." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
     <camera name="left" pos="0. 5 0.3" xyaxes="-1. 0. 0. 0. 0. 1."/>
     <camera name="right" pos="0. -5 0.3" xyaxes="1. 0. 0. 0. 0. 1."/>
     <camera name="track" mode="trackcom" fovy="45" pos="0.5 -1. 0.35" xyaxes="0.866 0.5 0 0 0 1"/>
     <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid"/>
-    <body name='mocap' mocap='true' pos='0 0 .2'>
-      <geom name="plat1" type="box" size="0.5 2.5 .2" pos="0 0 0" rgba=".8 .8 .8 1"/>
-      <!-- <geom name="plat2" type="box" size="0.5 2.5 .2" pos="1.5 0 0" rgba=".8 .8 .8 1"/> -->
-      <!-- <geom name="stair1" type="mesh" mesh="stair1" pos="0.0 0 -0.05"/>
-      <geom name="stair2" type="mesh" mesh="stair2" pos="0.2 0 -0.05"/>
-      <geom name="stair3" type="mesh" mesh="stair3" pos="0.4 0 -0.05"/>
-      <geom name="stair4" type="mesh" mesh="stair4" pos="0.6 0 -0.05"/>
-      <geom name="stair5" type="mesh" mesh="stair5" pos="0.8 0 -0.05"/> -->
-      <geom name="end" type="cylinder" size="0.1 0.04 0" pos="1.5 0 0" rgba="0 1 0 1" contype="0" conaffinity="0"/>
+    <geom name="wall1" type="box" pos="10 0 0" size="0.1 10 5" rgba=".5 .5 .5 1"/>
+    <geom name="wall2" type="box" pos="-10 0 0" size="0.1 10 5" rgba=".5 .5 .5 1"/>
+    <geom name="wall3" type="box" pos="0 10 0" size="10 0.1 5" rgba=".5 .5 .5 1"/>
+    <geom name="wall4" type="box" pos="0 -10 0" size="10 0.1 5" rgba=".5 .5 .5 1"/>
+
+    <geom name="t1" type="cylinder" size="0.1 0.03 0" pos="-6 6 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t2" type="cylinder" size="0.1 0.03 0" pos="-3 6 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t3" type="cylinder" size="0.1 0.03 0" pos="0 6 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t4" type="cylinder" size="0.1 0.03 0" pos="3 6 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t5" type="cylinder" size="0.1 0.03 0" pos="6 6 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t6" type="cylinder" size="0.1 0.03 0" pos="-6 3 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t7" type="cylinder" size="0.1 0.03 0" pos="-3 3 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t8" type="cylinder" size="0.1 0.03 0" pos="0 3 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t9" type="cylinder" size="0.1 0.03 0" pos="3 3 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t10" type="cylinder" size="0.1 0.03 0" pos="6 3 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t11" type="cylinder" size="0.1 0.03 0" pos="-6 0 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t12" type="cylinder" size="0.1 0.03 0" pos="-3 0 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t13" type="cylinder" size="0.1 0.03 0" pos="0 0 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t14" type="cylinder" size="0.1 0.03 0" pos="3 0 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t15" type="cylinder" size="0.1 0.03 0" pos="6 0 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t16" type="cylinder" size="0.1 0.03 0" pos="-6 -3 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t17" type="cylinder" size="0.1 0.03 0" pos="-3 -3 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t18" type="cylinder" size="0.1 0.03 0" pos="0 -3 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t19" type="cylinder" size="0.1 0.03 0" pos="3 -3 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t20" type="cylinder" size="0.1 0.03 0" pos="6 -3 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t21" type="cylinder" size="0.1 0.03 0" pos="-6 -6 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t22" type="cylinder" size="0.1 0.03 0" pos="-3 -6 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t23" type="cylinder" size="0.1 0.03 0" pos="0 -6 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t24" type="cylinder" size="0.1 0.03 0" pos="3 -6 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+    <geom name="t25" type="cylinder" size="0.1 0.03 0" pos="6 -6 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+
+    <body name='target' mocap='true' pos='0 0 0'>
+        <geom name='target_indicator' type="cylinder" size="0.1 0.04 0" pos="0 0 0" rgba="0 1 0 1" contype="0" conaffinity="0"/>
     </body>
+
+
+    <body name="bumps1" pos="6 0 0" euler="0 0 0" mocap="true">
+      <geom name="o1" type="box" pos="-.5 .5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o2" type="box" pos="2.5 -1.5 0" size="0.5 0.5 0.04" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o3" type="box" pos="-.5 -2.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o4" type="box" pos="1.5 1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o5" type="box" pos="-1.5 -1.5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o6" type="box" pos="-1.5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o7" type="box" pos=".5 2.5 0" size="0.5 0.5 0.04" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o8" type="box" pos="1.5 -1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o9" type="box" pos=".5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o10" type="box" pos="2.5 1.5 0" size="0.5 0.5 0.04" rgba="0. 0 .5 1" conaffinity="1"/>
+    </body>
+    <body name="bumps2" pos="0 -6 0" euler="0 0 1.57" mocap="true">
+      <geom name="o21" type="box" pos="-.5 .5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o22" type="box" pos="2.5 -1.5 0" size="0.5 0.5 0.04" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o23" type="box" pos="-.5 -2.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o24" type="box" pos="1.5 1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o25" type="box" pos="-1.5 -1.5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o26" type="box" pos="-1.5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o27" type="box" pos=".5 2.5 0" size="0.5 0.5 0.04" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o28" type="box" pos="1.5 -1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o29" type="box" pos=".5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o20" type="box" pos="2.5 1.5 0" size="0.5 0.5 0.04" rgba="0. 0 .5 1" conaffinity="1"/>
+    </body>
+    <body name="bumps3" pos="-6 6 0" euler="0 0 -1.57" mocap="true">
+      <geom name="o31" type="box" pos="-.5 .5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o32" type="box" pos="2.5 -1.5 0" size="0.5 0.5 0.04" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o33" type="box" pos="-.5 -2.5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o34" type="box" pos="1.5 1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o35" type="box" pos="-1.5 -1.5 0" size="0.5 0.5 0.03" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o36" type="box" pos="-1.5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o37" type="box" pos=".5 2.5 0" size="0.5 0.5 0.04" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o38" type="box" pos="1.5 -1.5 0" size="0.5 0.5 0.01" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o39" type="box" pos=".5 .5 0" size="0.5 0.5 0.02" rgba="0. 0 .5 1" conaffinity="1"/>
+      <geom name="o30" type="box" pos="2.5 1.5 0" size="0.5 0.5 0.04" rgba="0. 0 .5 1" conaffinity="1"/>
+    </body>
+
+    <body name='obstacles1' mocap='true' pos='0 0 0'>
+      <geom name="cube1" type="box" size="0.5 .5 2" pos="1.5 0 0" rgba=".6 .6 .6 1"/>
+      <geom name="cube2" type="box" size="0.5 .5 2" pos="-2 1 0" rgba=".6 .6 .6 1"/>
+    </body>
+    <body name='obstacles2' mocap='true' pos='6 6 0' euler='0 0 1.57'>
+      <geom name="cube21" type="box" size="0.5 .5 2" pos="1.5 0 0" rgba=".6 .6 .6 1"/>
+      <geom name="cube22" type="box" size="0.5 .5 2" pos="-2 1 0" rgba=".6 .6 .6 1"/>
+    </body>
+    <body name='obstacles3' mocap='true' pos='-6 -6 0' euler='0 0 -1.57'>
+      <geom name="cube31" type="box" size="0.5 .5 2" pos="1.5 0 0" rgba=".6 .6 .6 1"/>
+      <geom name="cube32" type="box" size="0.5 .5 2" pos="-1.5 0 0" rgba=".6 .6 .6 1"/>
+    </body>
+
+    <body name='platform1' mocap='true' pos='-6 0 0' euler='0 0 -1.57'>
+      <geom name="p1" type="box" size="0.5 2.5 .05" pos="1.5 0 0" rgba=".6 .6 .6 1"/>
+      <geom name="p2" type="box" size="0.5 2.5 .05" pos="-1.5 0 0" rgba=".6 .6 .6 1"/>
+    </body>
+    <body name='platform2' mocap='true' pos='0 6 0' euler='0 0 -1.57'>
+      <geom name="p21" type="box" size="0.5 2.5 .05" pos="1.5 0 0" rgba=".6 .6 .6 1"/>
+      <geom name="p22" type="box" size="0.5 2.5 .05" pos="-1.5 0 0" rgba=".6 .6 .6 1"/>
+    </body>
+    <body name='platform3' mocap='true' pos='6 -6 0' euler='0 0 0'>
+      <geom name="p31" type="box" size="0.5 2.5 .05" pos="1.5 0 0" rgba=".6 .6 .6 1"/>
+      <geom name="p32" type="box" size="0.5 2.5 .05" pos="-1.5 0 0" rgba=".6 .6 .6 1"/>
+    </body>
+
     <!-- ======= ROBOT ======= -->
     <body name="base_link" pos="-1.5 0 0.35" euler="0 0 0">
       <inertial pos="0.018885 0.00062964 0.06018" quat="-0.064773 0.618315 0.0968439 0.777246" mass="4.6733" diaginertia="0.054592 0.0348635 0.0323885"/>
@@ -62,6 +153,7 @@
       <geom name="base3" size="0.048 0.0175" pos="0.017241 0.106 0.0613" quat="0.499998 -0.500002 0.5 0.5" type="cylinder" rgba="0.75294 0 0 0.000987654321"/>
       <geom name="base4" size="0.048 0.0175" pos="0.017241 -0.106 0.0613" quat="0.499998 -0.500002 0.5 0.5" type="cylinder" rgba="0.75294 0 0 0.000987654321"/>
       <site name="imu" pos="0 0 0"/>
+      <!-- <site name='cam' pos='0 0 27' xyaxes=' '/> -->
       <site name="lidar01" pos="0   -.30  .15"   zaxis=".7071 -.7071 0"/>
       <site name="lidar02" pos="0   -.20  .15"   zaxis=".8660 -.5000 0"/>
       <site name="lidar03" pos="0   -.10  .15"   zaxis=".9659 -.2588 0"/>
@@ -132,7 +224,7 @@
           <geom size="0.1 0.035 0.005" pos="0.1 0 0" type="box" rgba="0.89804 0 0.92941 0.000987654321"/>
           <body name="left_wheel" pos="0.18 0 0.0305">
             <inertial pos="0 0 0.0012686" quat="0.5 0.5 -0.5 0.5" mass="0.44583" diaginertia="0.0014254 0.00076522 0.00076522"/>
-            <!-- <joint name="left_ankle" pos="0 0 0" axis="0 0 1" limited="false"/> -->
+            <joint name="left_ankle" pos="0 0 0" axis="0 0 1" limited="false"/>
             <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0 0 1" mesh="left_wheel"/>
             <geom size="0.065 0.02" type="cylinder" rgba="0 0 0.75294 0.000987654321"/>
           </body>
@@ -151,7 +243,7 @@
           <geom size="0.1 0.035 0.005" pos="0.1 0 0" type="box" rgba="0.89804 0 0.92941 0.000987654321"/>
           <body name="right_wheel" pos="0.18 0 -0.0305">
             <inertial pos="0 0 -0.0012686" quat="0.5 0.5 -0.5 0.5" mass="0.44583" diaginertia="0.0014254 0.00076522 0.00076522"/>
-            <!-- <joint name="right_ankle" pos="0 0 0" axis="0 0 1" limited="false"/> -->
+            <joint name="right_ankle" pos="0 0 0" axis="0 0 1" limited="false"/>
             <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0 0 1" mesh="right_wheel"/>
             <geom size="0.065 0.02" type="cylinder" rgba="0 0 0.75294 0.000987654321"/>
           </body>
@@ -160,12 +252,12 @@
     </body>
   </worldbody>
   <actuator>
-    <position name="left_hip_motor" joint="left_hip"/>
+    <position name="left_hip_motor" joint="left_hip" />
     <position name="left_knee_motor" joint="left_knee"/>
-    <!-- <motor name="left_ankle_motor" joint="left_ankle" gear='50' ctrlrange='-7 7'/> -->
+    <velocity name="left_ankle_motor" joint="left_ankle" kv='.05'/>
     <position name="right_hip_motor" joint="right_hip"/>
     <position name="right_knee_motor" joint="right_knee"/>
-    <!-- <motor name="right_ankle_motor" joint="right_ankle" gear='50' ctrlrange='-7 7'/> -->
+    <velocity name="right_ankle_motor" joint="right_ankle" kv='.05'/>
   </actuator>
 
   <sensor>
@@ -225,6 +317,7 @@
     <rangefinder name="l54" site="lidar46"/>
     <rangefinder name="l55" site="lidar47"/>
     <rangefinder name="l56" site="lidar48"/>
+    <!-- <camprojection name='map' site='cam'/> -->
   </sensor>
 
 </mujoco>

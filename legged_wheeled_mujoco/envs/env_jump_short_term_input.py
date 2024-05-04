@@ -12,6 +12,8 @@ import math
 from scipy.spatial.transform import Rotation
 import envs.register
 
+xml_file_name=os.path.join(os.path.dirname(__file__), 'asset/jump_model.xml')
+
 DEFAULT_CAMERA_CONFIG = {
     "trackbodyid": 1,
     "distance": 4.0,
@@ -34,12 +36,12 @@ class JumpEnv(MujocoEnv, utils.EzPickle):
     # 初始化环境参数
     def __init__(
         self,
-        xml_file=os.path.join(os.path.dirname(__file__), 'asset', "jump_model.xml"),
+        xml_file=xml_file_name,
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
         ctrl_cost_weight=0.0001,
         max_step = 500,
         healthy_reward=.1,
-        healthy_z_range=0.2,
+        healthy_z_range=0.21,
         reset_noise_scale=0.1,
         fixed_height = True,
         **kwargs
@@ -64,7 +66,7 @@ class JumpEnv(MujocoEnv, utils.EzPickle):
             ],
             "render_fps": int(np.round(1.0 / self.dt)),
         }
-        obs_size = 1 + self.data.qpos.size + self.data.qvel.size + self.data.sensordata.size
+        obs_size = 2 + self.data.qpos.size + self.data.qvel.size + 4 + self.data.sensordata.size
         self.observation_space = Box(
             low=-np.inf, high=np.inf, shape=(obs_size,), dtype=np.float64
         )
@@ -87,15 +89,7 @@ class JumpEnv(MujocoEnv, utils.EzPickle):
 
     @property # 计算健康奖励
     def healthy_reward(self):
-        if self.c_step<500:
-            return float(self.is_healthy) * self._healthy_reward
-        else:
-            return 0
-
-    # 计算控制成本
-    def control_cost(self, action):
-        control_cost = self._ctrl_cost_weight * np.sum(np.abs([action[i] for i in range(6) if i!=2 and i!=5]))
-        return control_cost
+        return float(self.is_healthy) * self._healthy_reward
 
     @property  # 是否倾倒
     def is_healthy(self):
@@ -107,72 +101,65 @@ class JumpEnv(MujocoEnv, utils.EzPickle):
     def done(self):
         done = not self.is_healthy
         return done
-
-    # 碰到大腿以上
-    def bump_base(self):
-        # for i in range(self.sim.data.ncon):
-        #     contact = self.sim.data.contact[i]
-        #     geom1 = self.sim.model.geom_id2name(contact.geom1)
-        #     geom2 = self.sim.model.geom_id2name(contact.geom2)
-        #     if (geom1 in ['base1', 'base2', 'base3', 'base4', 'left_thigh1', 'left_thigh2', 'left_thigh3',
-        #                   'right_thigh1', 'right_thigh2', 'right_thigh3']) or (
-        #             geom2 in ['base1', 'base2', 'base3', 'base4', 'left_thigh1', 'left_thigh2', 'left_thigh3',
-        #                       'right_thigh1', 'right_thigh2', 'right_thigh3']):
-        #         return True
-        return False
     
     def get_xydistance(self)->float:
         # target pos
         # target_pos = np.array([0,0,self.height+0.3])
-        target_pos = np.array([2,0,0.3])
+        target_pos = self.target
         # robot pos
-        rob_pos = self.obs[1:4]
+        rob_pos = self.obs[2:4]
         distance = target_pos - rob_pos
         distance = sum(distance**2)**0.5
         return distance
+    
+    def is_jump_with_both_feet(self) -> int :
+        body_pos = self.data.xpos.copy()
+        if body_pos[-4,-1]<0.08 and body_pos[-1,-1]<0.08:
+            return 1
+        if body_pos[-4,-1]>0.08 and body_pos[-1,-1]>0.08:
+            return 1
+        return 0
     
     # 执行仿真中的一步
     def step(self, action):
         info = {}
         reward = 0
         self.c_step+=1
-        self._get_obs()
-        z_prev = self.obs[3]
+        d_action = action-self.action
+        self.action_prev = self.action
+        self.action = action.copy()
         d_before = self.get_xydistance()
         self.do_simulation(action, self.frame_skip)
         obs = self._get_obs()
-        z_curr = self.obs[3]
-        v_z = self.obs[14]
+        robot_pos = self.obs[2:5].copy()
         d_after = self.get_xydistance()
         
-        # ctrl_cost = self.control_cost(action)  # 控制损失
-        unstable_punishment = 0
-        # if the robot is moving forward
-        approch_distance = d_before-d_after
-        # print(approch_distance)
-        forward_check = 0
-        
-        # health reward: maintain standing pose
-
-        # control cost: acceleration of motors
-        # cost = ctrl_cost
-        # current_qpos = np.concatenate((self.obs[8:10], self.obs[10:12]), axis=0)
-        # act_qpos = np.concatenate((action[:2],action[2:]),axis=0)/50
-        # control_cost = sum((current_qpos-act_qpos)**2)
+        # control cost
+        qacc = self.data.qacc[-4:]
+        acc_cost = sum((.001*qacc)**2)
+        ctrl_cost = min(acc_cost,10)
 
         # insymmetric_punishment = sum(((action[:3]-action[3:])/np.array([30,30,160]))**2)
-        insymmetric_punishment = sum(((action[:2]-action[2:])/np.array([30,30]))**2)    # 10, 20
+        insymmetric_punishment = sum((abs(action[:2]-action[2:])/np.array([8,8]))**2)    # 10, 20
         
         approaching_reward = (d_before-d_after) # if forward_check>0 else 0 # -5*abs(d_before-d_after)
         target_pos = np.array([self.tx[self.c_step-1], self.ty[self.c_step-1], self.tz[self.c_step-1]])
-        robot_pos = self.obs[1:4].copy()
-        trajector_align = - sum((target_pos-robot_pos)**2)  # 10
 
-        jump_reward = max(0,v_z)    # 10
-        reward = 0*trajector_align + 20*approaching_reward + self.healthy_reward - 10*insymmetric_punishment + 0.5*jump_reward # - cost
+        # trajector_align = - sum((target_pos-robot_pos)**2)  # 10
+
+        # jumping reward
+        v_z = self.obs[15]
+        jump_reward = max(0, v_z)    # 10
+        jump_reward = min(1, jump_reward)
+        # jump_reward = self.is_jump_with_both_feet()*jump_reward
+
+        # total reward
+        reward = 20*approaching_reward + self.healthy_reward - .5*insymmetric_punishment + 1*jump_reward - 0.1*ctrl_cost
         
         done = self.done
-        if self.obs[1]>-1 and self.obs[1]<1 and self.obs[3]<(self.height+self._healthy_z_range):
+        if robot_pos[0]>-0.5 and robot_pos[0]<0.5 and robot_pos[2]<(self.height+self._healthy_z_range):
+            done = True
+        if robot_pos[2]>0.6:
             done = True
 
         # 判断是否到达终点, pretrain 
@@ -188,29 +175,6 @@ class JumpEnv(MujocoEnv, utils.EzPickle):
             if self.c_step < 200:
                 reward -= 10
             info.update({'is_success':False, 'termination':'fall or collision'})
-        
-        # 判断是否到达终点， enhance
-        # reward = 0
-        # if not done and robot_pos[0]>1:
-        #     reward += .3
-        # if d_after<0.5:
-        #     reward += .3
-        #     jump_reward = 0
-        #     approaching_reward = 0
-        # if self.c_step>=self.max_step:
-        #     done = True
-        #     if d_after<0.5:
-        #         reward += 100
-        #         info.update({'is_success':True, 'termination':'success'})
-        #     else:
-        #         reward -= 10
-        #         info.update({'is_success':False, 'termination':'not within target boundary'})
-        # elif done == True:
-        #     reward -= 10
-        #     info.update({'is_success':False, 'termination':'fall or collision'})
-        # # print(reward)
-        # reward += 0*trajector_align + 20*approaching_reward + self.healthy_reward - 10*insymmetric_punishment + 0.5*jump_reward  # - cost
-        
 
         return obs, reward, done, False, info
 
@@ -219,32 +183,33 @@ class JumpEnv(MujocoEnv, utils.EzPickle):
         '''
         STATE INDEX (no preprocess)
         sensor data from base imu
-        sensor: length = 24
+        sensor: length = 87
             IDX    |DATA
-            0      |target h
-            1-3    |base pos x,y,z
-            4-7    |base ori quat
-            8-9    |left hip/knee q pos
-            10-11  |right hip/knee q pos
-            12-14  |base linear velocity
-            15-17  |base angular velocity
-            18-20  |left hip/knee/wheel q velocity
-            21-23  |right hip/knee/wheel q velocity
-            24-79  |lidar readings
+            0-1    |target pos
+            2-4    |base pos x,y,z
+            5-8    |base ori quat
+            9-10   |left hip/knee qpos
+            11-12  |right hip/knee qpos
+            13-15  |base linear velocity
+            16-18  |base angular velocity
+            19-21  |left hip/knee/wheel qvel
+            22-24  |right hip/knee/wheel qvel
+            25-30  |actions
+            31-86  |lidar readings
         '''
         # sensor data
         qpos = self.data.qpos.flatten()
         qvel = self.data.qvel.flatten()
         lidar = self.data.sensordata
-        self.obs = np.concatenate([np.array(self.height).reshape(-1), qpos, qvel, lidar])
+        self.obs = np.concatenate([self.target, qpos, qvel, self.action, lidar])
         # np.delete(qpos,[-1,-4]) if delete wheel motor
 
         obs = self.obs.copy()
-        obs[0] *= 5
-        obs[1:3] /= 10
-        obs[8:12] *= 3
-        for i in range(-56,0):
-            obs[i] /= 10 if obs[i]>0 else 1
+        obs[:4] /= 10
+        obs[9:13] *= 3
+        obs[16:23] /= 10
+        obs[23:27] /= 10
+        obs[-56:] /= 10
         # obs[20] /= 100
         # obs[23] /= 100
         
@@ -252,12 +217,14 @@ class JumpEnv(MujocoEnv, utils.EzPickle):
 
     # 重置模型
     def reset_model(self):
-        
+        self.action = np.zeros((4,))
+        self.action_prev = np.zeros((4,))
+        self.target = np.array([1.5, 0])
         self.c_step = 0
         qpos = self.init_qpos
         qvel = self.init_qvel
         # reset target
-        self.height = 0.05 if self.fixed_height else random.random()*0.05+0.05
+        self.height = 0.05 if self.fixed_height else random.random()*0.06+0.01
         mpos = np.array([0,0,self.height-0.2])
         self.data.mocap_pos = mpos
         # reset inital robot position
