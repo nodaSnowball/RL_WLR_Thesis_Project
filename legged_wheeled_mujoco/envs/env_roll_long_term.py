@@ -109,13 +109,16 @@ class RollEnv(MujocoEnv, utils.EzPickle):
         
         # control cost 
         qacc = self.data.qacc[-6:]
-        acc_cost = sum((.001*qacc)**2)
-        ctrl_cost = min(acc_cost,10)
+        acc_cost = sum(abs(.0001*qacc))
+        ctrl_cost = min(acc_cost, 1)
         # approaching reward
         approaching_reward = d_before-d_after
+        # pos reference
+        punishment = sum(abs(action[:2])+abs(action[3:5]))
+        punishment = min(punishment, 10)
         
         # total reward
-        reward =  approaching_reward + self.healthy_reward - ctrl_cost
+        reward =  30*approaching_reward + self.healthy_reward - ctrl_cost - 0.1*punishment
 
         # 判断是否到达终点
         done = self.done
@@ -131,7 +134,7 @@ class RollEnv(MujocoEnv, utils.EzPickle):
                     info.update({'is_success':False})
         else:
             # fall
-            if self.step<=500:
+            if self.c_step<=500:
                 reward -= 10
             info.update({'is_success':False})
         
@@ -179,7 +182,7 @@ class RollEnv(MujocoEnv, utils.EzPickle):
         else:
             self.obs = np.concatenate([[obs], self.obs[:-1,:]], axis=0)
 
-        return obs
+        return self.obs.flatten()
 
     # 重置模型
     def reset_model(self):
@@ -202,10 +205,11 @@ class RollEnv(MujocoEnv, utils.EzPickle):
             qpos[5:9] = Rotation.from_euler('zyx',[0, 0, random.randint(0,3)*np.pi/2]).as_quat()
                 
             self.set_state(qpos, qvel)
-            self._get_obs()
-            return self.obs
+            obs = self._get_obs()
+            return obs
         
-        self.target = qpos[0:2]
+        self.target = np.array([6,3])
+        qpos[0:2] = self.target
         self.set_state(qpos, qvel)
         self._get_obs()
         return self.obs

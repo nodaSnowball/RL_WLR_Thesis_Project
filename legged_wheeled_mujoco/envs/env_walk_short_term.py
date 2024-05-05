@@ -89,22 +89,20 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
         # target pos
         target_pos = self.target
         # robot pos
-        rob_pos = self.curr_obs[2:4].copy()
+        rob_pos = self.curr_obs[2:4]
         xy_distance = target_pos - rob_pos
         distance = (xy_distance[0]**2 + xy_distance[1]**2)**0.5
         return distance
     
     def is_both_feet_on_ground(self) -> bool :
         body_pos = self.data.xpos.copy()
-        if body_pos[-4,-1]<0.8 and body_pos[-1,-1]<0.8:
+        if body_pos[-4,-1]<0.08 and body_pos[-1,-1]<0.08:
             return True
         return False
     
     # 执行仿真中的一步
     def step(self, action):
         info = {}
-        # action[5] = 0
-        # action[2] = 0
         reward = 0
         self.c_step+=1
         self.action_prev =self.action
@@ -113,7 +111,6 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
         d_before = self.get_xydistance()
         self.do_simulation(action, self.frame_skip)
         obs = self._get_obs()
-        robot_pos = self.curr_obs[2:5].copy()
         d_after = self.get_xydistance()
         
         # control cost
@@ -121,12 +118,15 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
         acc_cost = sum(abs(.0001*qacc))
         ctrl_cost = min(acc_cost,1)
         # rolling punishment
-        punishment = 0.15 if self.is_both_feet_on_ground() else 0
+        # punishment = 0.15 if self.is_both_feet_on_ground() else 0
         # approching reward
         approaching_reward = min(d_before-d_after, 0.025)
+        # walk pos reference
+        punishment = abs(action[0]+action[1]) + abs(action[3]+action[4]) + abs(action[0]+action[3])
+        punishment = min(punishment,10)
 
         # total reward
-        reward =  20*approaching_reward + self.healthy_reward - 0*punishment - 1*ctrl_cost
+        reward =  20*approaching_reward + self.healthy_reward - 0.1*punishment - 1*ctrl_cost
 
         # 判断是否到达终点
         done = self.done

@@ -74,11 +74,6 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
     def healthy_reward(self):
         return float(self.is_healthy) * self._healthy_reward
 
-    # 计算控制成本
-    def control_cost(self, action):
-        control_cost = 0    # self._ctrl_cost_weight * np.sum(np.abs([action[i] for i in range(6) if i!=2 and i!=5]))
-        return control_cost
-
     @property  # 是否倾倒
     def is_healthy(self):
         min_z = self._healthy_z_range
@@ -101,7 +96,7 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
     
     def is_both_feet_on_ground(self) -> bool :
         body_pos = self.data.xpos.copy()
-        if body_pos[-4,-1]<0.1 and body_pos[-1,-1]<0.1:
+        if body_pos[-4,-1]<0.08 and body_pos[-1,-1]<0.08:
             return True
         return False
     
@@ -118,18 +113,23 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
         obs = self._get_obs()
         d_after = self.get_xydistance()
         
+        # control cost
         qacc = self.data.qacc[-6:]
-        acc_cost = sum((.0005*qacc)**2)
+        acc_cost = sum(abs(.0001*qacc))
         ctrl_cost = min(acc_cost,1)
-
-        punishment = -0.3 if self.is_both_feet_on_ground() else 0
-        
+        # rolling punishment
+        # punishment = -0.3 if self.is_both_feet_on_ground() else 0
+        # approaching reward
         approaching_reward = d_before - d_after
+        # walk pos reference
+        punishment = abs(action[0]+action[1]) + abs(action[3]+action[4]) + abs(action[0]+action[3])
+        punishment = min(punishment,10)
 
-        done = self.done
-        reward =  approaching_reward + self.healthy_reward - 1*punishment - 1*ctrl_cost
+        # total reward
+        reward =  20*approaching_reward + self.healthy_reward - .1*punishment - 1*ctrl_cost
 
         # 判断是否到达终点
+        done = self.done
         if done == False:
             if d_after < 1:
                 # success
@@ -138,11 +138,12 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
                 info.update({'is_success':True})
             else:
                 # max step
-                if self.c_step==2000:
+                if self.c_step>=2000:
                     info.update({'is_success':False})
         else:
-            # Fall
-            reward -= 10
+            # fall
+            if self.c_step<=500:
+                reward -= 10
             info.update({'is_success':False})
         
         # print(reward)

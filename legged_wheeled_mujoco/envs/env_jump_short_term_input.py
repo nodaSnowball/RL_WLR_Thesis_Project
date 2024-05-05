@@ -12,7 +12,7 @@ import math
 from scipy.spatial.transform import Rotation
 import envs.register
 
-xml_file_name=os.path.join(os.path.dirname(__file__), 'asset/jump_model.xml')
+# xml_file='/scratch/zl4930/wlr/envs/asset/jump_model.xml',
 
 DEFAULT_CAMERA_CONFIG = {
     "trackbodyid": 1,
@@ -36,7 +36,7 @@ class JumpEnv(MujocoEnv, utils.EzPickle):
     # 初始化环境参数
     def __init__(
         self,
-        xml_file=xml_file_name,
+        xml_file=os.path.join(os.path.dirname(__file__), 'asset', "jump_model.xml"),
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
         ctrl_cost_weight=0.0001,
         max_step = 500,

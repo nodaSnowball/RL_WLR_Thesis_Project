@@ -41,7 +41,7 @@
     <camera name="top" mode='targetbody' target='base_link' pos="-8. -8. 10." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
     <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid" conaffinity='0' solref='0 -1000'/>
 
-    <body name='end_ref' pos='6 3 0'>
+    <body name='end_ref' pos='0 0 0'>
       <joint name='end_x' type='slide' axis='1 0 0' limited='true' range='-20 20' />
       <joint name='end_y' type='slide' axis='0 1 0' limited='true' range='-20 20' />
       <geom name="end" type="cylinder" pos="-0 -0 .0" size="0.2 0.01 0" rgba="0. 0.8 0. 1" contype='0' conaffinity="0"/>

@@ -109,13 +109,16 @@ class RollEnv(MujocoEnv, utils.EzPickle):
         
         # control cost 
         qacc = self.data.qacc[-6:]
-        acc_cost = sum((.001*qacc)**2)
-        ctrl_cost = min(acc_cost,10)
+        acc_cost = sum(abs(.0001*qacc))
+        ctrl_cost = min(acc_cost, 1)
         # approaching reward
         approaching_reward = d_before-d_after
+        # pos reference
+        punishment = sum(abs(action[:2])+abs(action[3:5]))
+        punishment = min(punishment, 10)
         
         # total reward
-        reward =  20*approaching_reward + self.healthy_reward - ctrl_cost
+        reward =  30*approaching_reward + self.healthy_reward - ctrl_cost - 0.05*punishment
 
         # 判断是否到达终点
         done = self.done
@@ -199,7 +202,8 @@ class RollEnv(MujocoEnv, utils.EzPickle):
             self._get_obs()
             return self.obs
         
-        self.target = qpos[0:2]
+        self.target = np.array([6,3])
+        qpos[0:2] = self.target
         self.set_state(qpos, qvel)
         obs = self._get_obs()
         return obs

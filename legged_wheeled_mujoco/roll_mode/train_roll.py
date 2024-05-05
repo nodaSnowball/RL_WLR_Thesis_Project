@@ -15,8 +15,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNorm
 from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env_name', default="Roll-v0")
-parser.add_argument('--input', default="short", type=str)
+parser.add_argument('--env_name', default="Roll-v1")
+parser.add_argument('--input', default="long", type=str)
 parser.add_argument('--alg', default="sac", type=str)
 parser.add_argument('--hr', default=0.3, type=float,
                     help='healthy reward')
@@ -26,7 +26,7 @@ parser.add_argument('--lr', type=float, default=5e-4)
 parser.add_argument('--seed', type=int, default=123456)
 parser.add_argument('--num_process', type=int, default=10)
 parser.add_argument('--num_steps', type=int, default=10000001)
-parser.add_argument('--random_reset', type=int, default=0)
+parser.add_argument('--random_reset', type=int, default=1)
 parser.add_argument('--replay_size', type=int, default=1000000, metavar='N',
                     help='size of replay buffer (default: 10000000)')
 parser.add_argument('--suffix', type=str, default='reset_target')
@@ -69,7 +69,7 @@ if args.input == 'long':
                         activation_fn=torch.nn.ReLU,
                         normalize_images=False,
                         net_arch=dict(pi=[512, 256, 128], vf=[256, 128]))
-                model = PPO('CnnPolicy', env, learning_rate=args.lr, verbose=0, tensorboard_log=log_dir, policy_kwargs=policy_kwargs, buffer_size=int(2e5), seed=1)
+                model = PPO('CnnPolicy', env, learning_rate=args.lr, verbose=0, tensorboard_log=log_dir, policy_kwargs=policy_kwargs, seed=1)
 
 # MLP model
 if args.input == 'short':
