@@ -21,9 +21,17 @@ register(
     max_episode_steps=1000, # 一个episode的最大步数
     reward_threshold=6000.0, # 完成任务的奖励阈值
 )
+
 register(
     id="Jump-v1", # 环境id
     entry_point="envs.env_jump_long_term_input:JumpEnv", # 环境类入口
+    max_episode_steps=1000, # 一个episode的最大步数
+    reward_threshold=6000.0, # 完成任务的奖励阈值
+)
+
+register(
+    id="JumpDiscrete-v0", # 环境id
+    entry_point="envs.env_jump_discrete:JumpEnv", # 环境类入口
     max_episode_steps=1000, # 一个episode的最大步数
     reward_threshold=6000.0, # 完成任务的奖励阈值
 )
@@ -51,7 +59,14 @@ register(
 
 register(
     id="Nav-v0", # 环境id
-    entry_point="envs.env_nav_short_term_baseline:NavEnv", # 环境类入口
-    max_episode_steps=1000, # 一个episode的最大步数
+    entry_point="envs.env_nav_baseline:NavEnv", # 环境类入口
+    max_episode_steps=2000, # 一个episode的最大步数
+    reward_threshold=6000.0, # 完成任务的奖励阈值
+)
+
+register(
+    id="Nav-v1", # 环境id
+    entry_point="envs.env_nav:NavEnv", # 环境类入口
+    max_episode_steps=2000, # 一个episode的最大步数
     reward_threshold=6000.0, # 完成任务的奖励阈值
 )

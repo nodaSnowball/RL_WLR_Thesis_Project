@@ -14,13 +14,13 @@ import envs.register
 
 DEFAULT_CAMERA_CONFIG = {
     "trackbodyid": 1,
-    "distance": 10.0,
+    "distance": 15.0,
     "lookat": np.array((0.0, 0.0, 2.0)),
-    "elevation": -20.0,
+    "elevation": -90.0,
 }
 
 # 定义一个仿真环境
-class RollEnv(MujocoEnv, utils.EzPickle):
+class NavEnv(MujocoEnv, utils.EzPickle):
 
     metadata = {
         "render_modes": [
@@ -34,8 +34,8 @@ class RollEnv(MujocoEnv, utils.EzPickle):
     # 初始化环境参数
     def __init__(
         self,
-        xml_file=os.path.join(os.path.dirname(__file__), 'asset', "roll_model.xml"),
-        # xml_file='/scratch/zl4930/wlr/envs/asset/roll_model.xml',
+        xml_file=os.path.join(os.path.dirname(__file__), 'asset', "nav_model.xml"),
+        # xml_file='/scratch/zl4930/wlr/envs/asset/nav_model.xml',
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
         max_step = 500,
         healthy_reward=0.1,
@@ -51,6 +51,7 @@ class RollEnv(MujocoEnv, utils.EzPickle):
         self.c_step = 0
         self.max_step = max_step
         self.obs = None
+        self.obs_pos_dict = np.array([[x,y] for y in range(6,-7,-6) for x in range(-6,7,6)])
         self.pos_dict = np.array([[x,y] for y in range(6,-7,-3) for x in range(-6,7,3)])
 
         MujocoEnv.__init__(self, xml_file, 5, observation_space=None, default_camera_config=DEFAULT_CAMERA_CONFIG, **kwargs)
@@ -65,13 +66,13 @@ class RollEnv(MujocoEnv, utils.EzPickle):
 
         obs_size = self.data.qpos.size-2 + self.data.qvel.size-2 + 6 + self.data.sensordata.size
         self.observation_space = Box(
-            low=-np.inf, high=np.inf, shape=(100*obs_size,), dtype=np.float32
+            low=-np.inf, high=np.inf, shape=(obs_size,), dtype=np.float32
         )
 
     @property # 计算健康奖励
     def healthy_reward(self):
         return float(self.is_healthy) * self._healthy_reward
-
+    
     def bump_base(self):
         for i in range(self.data.ncon):
             geom1 = self.data.contact.geom1
@@ -111,7 +112,7 @@ class RollEnv(MujocoEnv, utils.EzPickle):
         d_before = self.get_xydistance()
         self.do_simulation(action, self.frame_skip)
         obs = self._get_obs()
-        robot_pos = self.curr_obs[2:5].copy()
+        robot_pos = self.curr_obs[2:5]
         d_after = self.get_xydistance()
         
         # control cost 
@@ -129,7 +130,7 @@ class RollEnv(MujocoEnv, utils.EzPickle):
         punishment = min(punishment, 10)
         
         # total reward
-        reward =  20*approaching_reward + self.healthy_reward - .05*ctrl_cost - 0.03*punishment
+        reward =  20*approaching_reward + self.healthy_reward - .05*ctrl_cost - 0*punishment
 
         # 判断是否到达终点
         done = self.done
@@ -188,13 +189,7 @@ class RollEnv(MujocoEnv, utils.EzPickle):
         obs[25:31] /= 10
         obs[-56:] /= 10
 
-        if self.c_step==0:
-            del self.obs
-            self.obs = np.repeat([obs], 100, axis=0)
-        else:
-            self.obs = np.concatenate([[obs], self.obs[:-1,:]], axis=0)
-
-        return self.obs.flatten()
+        return obs
 
     # 重置模型
     def reset_model(self):
@@ -205,59 +200,41 @@ class RollEnv(MujocoEnv, utils.EzPickle):
         qvel = self.init_qvel
 
         if self.random_reset:
-            # reset obstacle orientation
-            for i in range(4):
-                quat = Rotation.from_euler('zyx',[0, 0, random.randint(0,3)*np.pi/2]).as_quat()
-                self.data.mocap_quat[i] = quat
+            # reset obstacle
+            self.obstacle_id = np.array(list(range(9)))
+            random.shuffle(self.obstacle_id)
+            for i, obs_id in enumerate(self.obstacle_id):
+                self.data.mocap_pos[obs_id][0:2] = self.obs_pos_dict[i]
+                # quat = Rotation.from_euler('zyx',[0, 0, random.randint(0,3)*np.pi/2]).as_quat()
+                # self.data.mocap_quat[i] = quat
             # reset target
             target_idx = random.randint(0,24)
             self.target = self.pos_dict[target_idx]
             qpos[0:2] = self.target
             # reset inital robot position
-            action_idx = random.randint(0,3)
-            while True:
-                if action_idx==0:   # up
-                    if target_idx+5<=24:
-                        robot_idx = target_idx+5
-                        quat = Rotation.from_euler('zyx',[0, 0, 1*np.pi/2]).as_quat()
-                        break
-                    action_idx+=1
-                if action_idx==1:   # down
-                    if target_idx-5>=0:
-                        robot_idx = target_idx-5
-                        quat = Rotation.from_euler('zyx',[0, 0, -1*np.pi/2]).as_quat()
-                        break
-                    action_idx+=1
-                if action_idx==2:   # left
-                    if not (target_idx+1)%5==0:
-                        robot_idx = target_idx+1
-                        quat = Rotation.from_euler('zyx',[0, 0, 0*np.pi/2]).as_quat()
-                        break
-                    action_idx+=1
-                if action_idx==3:   # right
-                    if not target_idx%5==0:
-                        robot_idx = target_idx-1
-                        quat = Rotation.from_euler('zyx',[0, 0, 2*np.pi/2]).as_quat()
-                        break
-                    action_idx=0
+            robot_idx = random.randint(0,24)
+            while robot_idx==target_idx:
+                robot_idx = random.randint(0,24)
             qpos[2:4] = self.pos_dict[robot_idx]
-            qpos[5:9] = quat
+            qpos[5:9] = Rotation.from_euler('zyx',[0, 0, random.randint(0,3)*np.pi/2]).as_quat()
                 
             self.set_state(qpos, qvel)
             obs = self._get_obs()
             return obs
         
-        self.target = np.array([6,3])
+        self.target = np.array([6,0])
         qpos[0:2] = self.target
+        qpos[2:4] = np.array([-6,0])
         self.set_state(qpos, qvel)
-        self._get_obs()
-        return self.obs
+        obs = self._get_obs()
+        return obs
 
 
 if __name__ == '__main__':
     
     env = gym.make('Roll-v0')
     state = env.reset()
+    state = env.step(np.zeros((6,)))
     print(state)
 
     

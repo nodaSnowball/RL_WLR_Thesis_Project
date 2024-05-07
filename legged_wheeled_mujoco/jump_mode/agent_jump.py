@@ -117,37 +117,6 @@ class CustomExtractor(BaseFeaturesExtractor):
         # self.transform = TF.Compose([TF.Resize((224,224)), TF.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
         # self.feature_net = feature_net(device)
 
-        # 1d cnn lighter version
-        # self.cnn1 = Sequential(
-        #     Conv2d(1,32,kernel_size=(20,1), stride=(9,1), padding=(10,0), bias=False),
-        #     ReLU(),
-        #     Conv2d(32,64,kernel_size=(5,1), stride=(3,1), padding=(5,0), bias=False),
-        #     ReLU(),
-        #     Conv2d(64,8,1),
-        # )
-        # self.cnn2 = Sequential(
-        #     Conv2d(1,32,kernel_size=7, stride=3, padding=3, bias=False),
-        #     ReLU(),
-        #     Conv2d(32,64,kernel_size=7, stride=3, padding=3, bias=False),
-        #     ReLU(),
-        #     # Conv2d(128,64,kernel_size=(3,1), stride=(1,1), padding=(1,0), bias=False),
-        #     # ReLU(),
-        #     Conv2d(64,8,1),
-        # )
-        # self.mlp11 = Sequential(
-        #     Linear(1296,300),
-        #     # ReLU()
-        #     )
-        # self.mlp12 = Sequential(
-        #     Linear(672,200),
-        #     # ReLU()
-        #     )
-        # self.mlp2 = Sequential(
-        #     Linear(83, 256),
-        #     ReLU(),
-        #     Linear(256, 100)
-        # )
-
         # 1d version
         self.cnn1 = Sequential(
             Conv2d(1,32,kernel_size=(20,1), stride=(9,1), padding=(10,0), bias=False),
@@ -157,44 +126,51 @@ class CustomExtractor(BaseFeaturesExtractor):
             Conv2d(64,8,1),
         )
         self.cnn2 = Sequential(
-            Conv2d(1,32,kernel_size=7, stride=3, padding=3, bias=False),
+            Conv2d(1,32,kernel_size=7, stride=3, padding=3, bias=True),
             ReLU(),
-            Conv2d(32,128,kernel_size=7, stride=3, padding=3, bias=False),
+            Conv2d(32,64,kernel_size=7, stride=3, padding=3, bias=True),
             ReLU(),
             # Conv2d(128,64,kernel_size=(3,1), stride=(1,1), padding=(1,0), bias=False),
             # ReLU(),
-            Conv2d(128,16,1),
+            Conv2d(64,8,1),
+        )
+        self.mlp13 = Sequential(
+            Linear(31, 64),
+            ReLU(),
+            Linear(64, 16)
         )
         self.mlp11 = Sequential(
-            Linear(1296,256),
+            Linear(768,100),
             # ReLU()
             )
         self.mlp12 = Sequential(
-            Linear(1344,256),
+            Linear(672,100),
             # ReLU()
             )
         self.mlp2 = Sequential(
-            Linear(83, 256),
+            Linear(87, 256),
             ReLU(),
-            Linear(256, 512)
+            Linear(256, 100)
         )
 
         
     def forward(self, state):
         bs = state.size(0)
         state = state.reshape(bs,1,100,-1)
-        trj = state[:,:,:,:-56]                 # (bs,1,100,27)
+        trj = state[:,:,:,:-56]                 # (bs,1,100,31)
         lidar = state[:,:,:,-56:]               # (bs,1,100,56)
-        f11 = self.cnn1(trj)                    # (bs,8,6,27)  = (bs,1296)
-        f11 = f11.reshape(bs,-1)
+        f11 = self.cnn1(trj)                    # (bs,8,6,31)  = (bs,1296)
+        f11 = f11.reshape(-1,31)
+        f11 = self.mlp13(f11)                   # (bs*8*6, 16)
+        f11 = f11.reshape(bs,-1)                # (bs, 768)
         f11 = self.mlp11(f11)
-        f12 = self.cnn2(lidar)                  # (bs,16,12,7) = (bs,1344)
+        f12 = self.cnn2(lidar)                  # (bs,8,12,7) = (bs,672)
         f12 = f12.reshape(bs,-1)
         f12 = self.mlp12(f12)
-        f1 = torch.cat((f11,f12), dim=1)        # (bs,500)
+        f1 = torch.cat((f11,f12), dim=1)        # (bs,512)
         
         current_state = state[:, 0, 0,:]
-        f2 = self.mlp2(current_state)           # (bs,100)
+        f2 = self.mlp2(current_state)           # (bs,512)
         feature = torch.cat((f1, f2), dim=1)
 
-        return feature                          # (bs,600)
+        return feature                          # (bs,1024)

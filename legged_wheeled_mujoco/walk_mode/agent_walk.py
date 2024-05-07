@@ -135,17 +135,17 @@ class CustomExtractor(BaseFeaturesExtractor):
             Conv2d(64,8,1),
         )
         self.mlp11 = Sequential(
-            Linear(1488,300),
+            Linear(1488,384),
             # ReLU()
             )
         self.mlp12 = Sequential(
-            Linear(672,200),
+            Linear(672,128),
             # ReLU()
             )
         self.mlp2 = Sequential(
             Linear(87, 256),
             ReLU(),
-            Linear(256, 100)
+            Linear(256, 512)
         )
 
         
@@ -160,10 +160,10 @@ class CustomExtractor(BaseFeaturesExtractor):
         f12 = self.cnn2(lidar)                  # (bs,8,12,7) = (bs,672)
         f12 = f12.reshape(bs,-1)
         f12 = self.mlp12(f12)
-        f1 = torch.cat((f11,f12), dim=1)        # (bs,500)
+        f1 = torch.cat((f11,f12), dim=1)        # (bs,512)
         
         current_state = state[:, 0, 0,:]
-        f2 = self.mlp2(current_state)           # (bs,100)
+        f2 = self.mlp2(current_state)           # (bs,512)
         feature = torch.cat((f1, f2), dim=1)
 
-        return feature                          # (bs,600)
+        return feature                          # (bs,1024)

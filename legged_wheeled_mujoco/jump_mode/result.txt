@@ -1,0 +1,6 @@
+learning rate	1e-3	5e-4	1e-4	5e-5
+
+ppo short	0	0	0.18	0.37
+ppo long	0	0	0	0
+sac short	0.87	0.87	0.89	0
+sac long	0	0.72	0.83	0.12

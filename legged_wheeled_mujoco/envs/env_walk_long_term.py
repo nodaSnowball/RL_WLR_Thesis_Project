@@ -12,8 +12,6 @@ from time import sleep
 from scipy.spatial.transform import Rotation
 import envs.register
 
-# xml_file='/scratch/zl4930/wlr/envs/asset/walk_model.xml',
-
 DEFAULT_CAMERA_CONFIG = {
     "trackbodyid": 1,
     "distance": 4.0,
@@ -37,6 +35,7 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
     def __init__(
         self,
         xml_file=os.path.join(os.path.dirname(__file__), 'asset', "walk_model.xml"),
+        # xml_file='/scratch/zl4930/wlr/envs/asset/walk_model.xml',
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
         max_step = 500,
         healthy_reward=2,
@@ -52,7 +51,7 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
         self.c_step = 0
         self.max_step = max_step
         self.obs = None
-        self.target_pos = np.array([[x,y] for y in range(6,-7,-3) for x in range(-6,7,3)])
+        self.pos_dict = np.array([[x,y] for y in range(6,-7,-3) for x in range(-6,7,3)])
 
         MujocoEnv.__init__(self, xml_file, 5, observation_space=None, default_camera_config=DEFAULT_CAMERA_CONFIG, **kwargs)
         self.metadata = {
@@ -74,10 +73,18 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
     def healthy_reward(self):
         return float(self.is_healthy) * self._healthy_reward
 
+    def bump_base(self):
+        for i in range(self.data.ncon):
+            geom1 = self.data.contact.geom1
+            geom2 = self.data.contact.geom2
+            for id in np.concatenate([geom1, geom2],axis=0):
+                if self.model.geom_group[id] == 10:
+                    return True 
+
     @property  # 是否倾倒
     def is_healthy(self):
         min_z = self._healthy_z_range
-        is_healthy = (self.get_body_com("base_link")[2] > min_z)
+        is_healthy = (self.get_body_com("base_link")[2] > min_z) and (not self.bump_base())
         return is_healthy
 
     @property
@@ -96,7 +103,7 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
     
     def is_both_feet_on_ground(self) -> bool :
         body_pos = self.data.xpos.copy()
-        if body_pos[-4,-1]<0.08 and body_pos[-1,-1]<0.08:
+        if body_pos[-4,-1]<0.09 and body_pos[-1,-1]<0.09:
             return True
         return False
     
@@ -111,27 +118,35 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
         d_before = self.get_xydistance()
         self.do_simulation(action, self.frame_skip)
         obs = self._get_obs()
+        robot_pos = self.curr_obs[2:5]
         d_after = self.get_xydistance()
         
         # control cost
         qacc = self.data.qacc[-6:]
-        acc_cost = sum(abs(.0001*qacc))
-        ctrl_cost = min(acc_cost,1)
-        # rolling punishment
-        # punishment = -0.3 if self.is_both_feet_on_ground() else 0
+        # acc_cost = sum(abs(.0001*qacc))
+        # ctrl_cost = min(acc_cost,1)
+        acc_cost = sum((.001*qacc)**2)
+        ctrl_cost = min(acc_cost,10)
+
         # approaching reward
-        approaching_reward = d_before - d_after
+        approaching_reward = min(d_before-d_after, 0.025)
+
         # walk pos reference
-        punishment = abs(action[0]+action[1]) + abs(action[3]+action[4]) + abs(action[0]+action[3])
-        punishment = min(punishment,10)
+        p_walk = abs(action[0]+action[1]) + abs(action[3]+action[4]) # + abs(action[0]+action[3])
+        p_walk = min(p_walk,10)
+        p_roll = min(abs(action[2])+abs(action[5]), 5)
+        punishment = p_walk + p_roll
+        punishment += 10 if self.is_both_feet_on_ground() else 0
 
         # total reward
-        reward =  20*approaching_reward + self.healthy_reward - .1*punishment - 1*ctrl_cost
+        reward =  20*approaching_reward + self.healthy_reward - .02*punishment - .3*ctrl_cost
 
         # 判断是否到达终点
         done = self.done
+        if robot_pos[2]>0.8:
+            done = True
         if done == False:
-            if d_after < 1:
+            if d_after < .5:
                 # success
                 done = True
                 reward = 100
@@ -142,8 +157,7 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
                     info.update({'is_success':False})
         else:
             # fall
-            if self.c_step<=500:
-                reward -= 10
+            reward -= 10
             info.update({'is_success':False})
         
         # print(reward)
@@ -212,11 +226,34 @@ class WalkEnv(MujocoEnv, utils.EzPickle):
             self.target = self.pos_dict[target_idx]
             qpos[0:2] = self.target
             # reset inital robot position
-            robot_idx = random.randint(0,24)
-            while robot_idx==target_idx:
-                robot_idx = random.randint(0,24)
+            action_idx = random.randint(0,3)
+            while True:
+                if action_idx==0:   # up
+                    if target_idx+5<=24:
+                        robot_idx = target_idx+5
+                        quat = Rotation.from_euler('zyx',[0, 0, 1*np.pi/2]).as_quat()
+                        break
+                    action_idx+=1
+                if action_idx==1:   # down
+                    if target_idx-5>=0:
+                        robot_idx = target_idx-5
+                        quat = Rotation.from_euler('zyx',[0, 0, -1*np.pi/2]).as_quat()
+                        break
+                    action_idx+=1
+                if action_idx==2:   # left
+                    if not (target_idx+1)%5==0:
+                        robot_idx = target_idx+1
+                        quat = Rotation.from_euler('zyx',[0, 0, 0*np.pi/2]).as_quat()
+                        break
+                    action_idx+=1
+                if action_idx==3:   # right
+                    if not target_idx%5==0:
+                        robot_idx = target_idx-1
+                        quat = Rotation.from_euler('zyx',[0, 0, 2*np.pi/2]).as_quat()
+                        break
+                    action_idx=0
             qpos[2:4] = self.pos_dict[robot_idx]
-            qpos[5:9] = Rotation.from_euler('zyx',[0, 0, random.randint(0,3)*np.pi/2]).as_quat()
+            qpos[5:9] = quat
                 
             self.set_state(qpos, qvel)
             obs = self._get_obs()

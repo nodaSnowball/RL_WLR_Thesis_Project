@@ -3,10 +3,9 @@
   <option timestep="0.002" integrator="RK4" gravity="0 0 -9.806" solver="Newton" noslip_iterations="0"/>
   <size njmax="10000" nconmax="10000"/>
   <default>
-    <geom contype="1" conaffinity="1" friction="0.6 0.3 0.3" rgba="0.5 0.6 0.7 1" margin="0.001" group="0"/>
-    <motor gear="50" ctrllimited="true" ctrlrange="-80 80" />
+    <geom contype="1" conaffinity="1" rgba="0.5 0.6 0.7 1" margin="0.001" group="0"/>
+    <position gear='20' kp='10' ctrllimited="true" ctrlrange="-6 6"/>
     <joint limited="true" frictionloss="0.5" damping="45" armature="0.1"/>
-    <position ctrllimited='true' ctrlrange='-15 15' />
   </default>
 
   <asset>
@@ -41,9 +40,6 @@
     <light directional="true" diffuse=".6 .6 .6" pos="10 -10 30" dir="0 0 -10"/>
     <!-- <light pos="10 -1 30" dir="1 2 -1.5" diffuse=".6 .6 .6"/> -->
     <camera name="top" pos="0. 0. 20." xyaxes="1.000 0.0 0.000 0.0 1.000 0.017"/>
-    <camera name="left" pos="0. 5 0.3" xyaxes="-1. 0. 0. 0. 0. 1."/>
-    <camera name="right" pos="0. -5 0.3" xyaxes="1. 0. 0. 0. 0. 1."/>
-    <camera name="track" mode="trackcom" fovy="45" pos="0.5 -1. 0.35" xyaxes="0.866 0.5 0 0 0 1"/>
     <geom name="ground" type="plane" pos="0 0 0" size="20 20 0.1" material="grid"/>
     <geom name="wall1" type="box" pos="10 0 0" size="0.1 10 5" rgba=".5 .5 .5 1"/>
     <geom name="wall2" type="box" pos="-10 0 0" size="0.1 10 5" rgba=".5 .5 .5 1"/>
@@ -76,8 +72,10 @@
     <geom name="t24" type="cylinder" size="0.1 0.03 0" pos="3 -6 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
     <geom name="t25" type="cylinder" size="0.1 0.03 0" pos="6 -6 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
 
-    <body name='target' mocap='true' pos='0 0 0'>
-        <geom name='target_indicator' type="cylinder" size="0.1 0.04 0" pos="0 0 0" rgba="0 1 0 1" contype="0" conaffinity="0"/>
+    <body name='target' pos='0 0 0'>
+      <joint name='end_x' type='slide' axis='1 0 0' limited='true' range='-20 20' />
+      <joint name='end_y' type='slide' axis='0 1 0' limited='true' range='-20 20' />
+      <geom name='target_indicator' type="cylinder" size="0.1 0.04 0" pos="0 0 0" rgba="0 1 0 1" contype="0" conaffinity="0"/>
     </body>
 
 
@@ -146,6 +144,7 @@
 
     <!-- ======= ROBOT ======= -->
     <body name="base_link" pos="-1.5 0 0.35" euler="0 0 0">
+      <camera name="track" mode="track" fovy="45" pos="1 -2. 0.2" xyaxes="0.866 0.5 0 0 0 1"/>
       <inertial pos="0.018885 0.00062964 0.06018" quat="-0.064773 0.618315 0.0968439 0.777246" mass="4.6733" diaginertia="0.054592 0.0348635 0.0323885"/>
       <joint name="floating_base" type="free" limited="false" frictionloss=".001" damping=".01" armature="0."/>
       <geom name="base1" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0 0 1" mesh="base_link"/>
@@ -251,13 +250,14 @@
       </body>
     </body>
   </worldbody>
+  
   <actuator>
-    <position name="left_hip_motor" joint="left_hip" />
+    <position name="left_hip_motor" joint="left_hip"/>
     <position name="left_knee_motor" joint="left_knee"/>
-    <velocity name="left_ankle_motor" joint="left_ankle" kv='.05'/>
+    <motor name="left_ankle_motor" joint="left_ankle" gear='50' ctrlrange='-7 7'/>
     <position name="right_hip_motor" joint="right_hip"/>
     <position name="right_knee_motor" joint="right_knee"/>
-    <velocity name="right_ankle_motor" joint="right_ankle" kv='.05'/>
+    <motor name="right_ankle_motor" joint="right_ankle" gear='50' ctrlrange='-7 7'/>
   </actuator>
 
   <sensor>

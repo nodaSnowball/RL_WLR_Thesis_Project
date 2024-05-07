@@ -8,15 +8,15 @@ import itertools
 import torch
 from torch.utils.tensorboard import SummaryWriter
 import envs.register
-from roll_mode.agent_roll import CustomExtractor
+from jump_mode.agent_jump import CustomExtractor
 from stable_baselines3 import SAC, TD3, PPO
 from stable_baselines3.common.callbacks import EvalCallback,CheckpointCallback,CallbackList
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize
 from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env_name', default="Roll-v1")
-parser.add_argument('--input', default="long", type=str)
+parser.add_argument('--env_name', default="JumpDiscrete-v0")
+parser.add_argument('--input', default="short", type=str)
 parser.add_argument('--alg', default="sac", type=str)
 parser.add_argument('--hr', default=0.3, type=float,
                     help='healthy reward')
@@ -24,29 +24,29 @@ parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor for reward (default: 0.99)')
 parser.add_argument('--lr', type=float, default=1e-4)
 parser.add_argument('--seed', type=int, default=123456)
+parser.add_argument('--batch_size', type=int, default=256)
 parser.add_argument('--num_process', type=int, default=10)
 parser.add_argument('--num_steps', type=int, default=10000001)
 parser.add_argument('--random_reset', type=int, default=1)
-parser.add_argument('--replay_size', type=int, default=1000000, metavar='N',
-                    help='size of replay buffer (default: 10000000)')
+parser.add_argument('--replay_size', type=int, default=1000000)
 parser.add_argument('--suffix', type=str, default='reset_target')
 args = parser.parse_args()
 num_envs = args.num_process
 start_time = time.strftime("%m%d%H")
 dirname = args.alg +'_'+ args.input + '_hr'+str(args.hr) + '_lr'+str(args.lr) +'_'+args.suffix
-model_dir = os.path.join(os.path.dirname(__file__), 'history/models/'+dirname)
-log_dir = os.path.join(os.path.dirname(__file__), 'history/logs/'+dirname)
+model_dir = os.path.join(os.path.dirname(__file__), 'history_lidar/models/'+dirname)
+log_dir = os.path.join(os.path.dirname(__file__), 'history_lidar/logs/'+dirname)
 os.makedirs(model_dir, exist_ok=True)
 os.makedirs(log_dir, exist_ok=True)
-def make_env(n=2000, render_mode=None):
+def make_env(n=2000, render_mode=None, camera_id=None):
         def _init():
-                env = gym.make(args.env_name, max_step=n, healthy_reward=.3, render_mode=render_mode, random_reset=args.random_reset)
+                env = gym.make(args.env_name, max_step=n, healthy_reward=.3, render_mode=render_mode, random_reset=args.random_reset, camera_id=camera_id)
                 return env
         return _init
 # Environment
-env = DummyVecEnv([make_env(2000) for _ in range(10)])
+env = DummyVecEnv([make_env(500) for _ in range(10)])
 # env = VecNormalize(env)
-eval_env = DummyVecEnv([make_env(2000, render_mode='human') for _ in range(1)])
+eval_env = DummyVecEnv([make_env(500, render_mode='human') for _ in range(1)])
 # eval_env = VecNormalize(eval_env)
 
 
@@ -92,11 +92,15 @@ if args.input == 'short':
 # train
 ec = EvalCallback(eval_env, eval_freq=20000/num_envs, n_eval_episodes=20, deterministic=1, render=1, 
                   best_model_save_path=model_dir, log_path=log_dir)
-cc = CheckpointCallback(save_freq=int(1e5/num_envs), save_path=model_dir,
+cc = CheckpointCallback(save_freq=int(5e4/num_envs), save_path=model_dir,
                                              name_prefix='checkpoint_model')
+print('-'*40)
 print(f'Training start at {start_time}. Learning rate:{args.lr} healthy reward:{args.hr} env: {args.env_name} algorithm: {args.alg}\ncomment:{args.suffix}')
-model.learn(total_timesteps=1e7, callback=CallbackList([ec,cc]))
+print('-'*40)
+model.learn(total_timesteps=5e6, callback=CallbackList([ec,cc]))
 model.save(model_dir+'/final_model')
 end_time = time.strftime('%m%d%H')
+print('-'*40)
+print(f'Training start at {end_time}. Learning rate:{args.lr} healthy reward:{args.hr} env: {args.env_name} algorithm: {args.alg}\ncomment:{args.suffix}')
 
 

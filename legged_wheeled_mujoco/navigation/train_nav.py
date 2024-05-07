@@ -9,20 +9,20 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 import envs.register
 from roll_mode.agent_roll import CustomExtractor
-from stable_baselines3 import SAC, TD3, PPO
+from stable_baselines3 import SAC, DQN, PPO
 from stable_baselines3.common.callbacks import EvalCallback,CheckpointCallback,CallbackList
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize
 from collections import deque
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env_name', default="Roll-v1")
+parser.add_argument('--env_name', default="Nav-v1")
 parser.add_argument('--input', default="long", type=str)
-parser.add_argument('--alg', default="sac", type=str)
+parser.add_argument('--alg', default="ppo", type=str)
 parser.add_argument('--hr', default=0.3, type=float,
                     help='healthy reward')
 parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor for reward (default: 0.99)')
-parser.add_argument('--lr', type=float, default=1e-4)
+parser.add_argument('--lr', type=float, default=5e-5)
 parser.add_argument('--seed', type=int, default=123456)
 parser.add_argument('--num_process', type=int, default=10)
 parser.add_argument('--num_steps', type=int, default=10000001)
@@ -44,9 +44,9 @@ def make_env(n=2000, render_mode=None):
                 return env
         return _init
 # Environment
-env = DummyVecEnv([make_env(2000) for _ in range(10)])
+env = DummyVecEnv([make_env(2000) for _ in range(num_envs)])
 # env = VecNormalize(env)
-eval_env = DummyVecEnv([make_env(2000, render_mode='human') for _ in range(1)])
+eval_env = DummyVecEnv([make_env(2000, render_mode=None) for _ in range(1)])
 # eval_env = VecNormalize(eval_env)
 
 
@@ -54,22 +54,22 @@ eval_env = DummyVecEnv([make_env(2000, render_mode='human') for _ in range(1)])
 
 # CNN model
 if args.input == 'long':
-        if args.alg == 'sac':
-                policy_kwargs = dict(
-                        features_extractor_class=CustomExtractor,
-                        features_extractor_kwargs=dict(args=args, features_dim=300, ),  # 736, 1472, 1024
-                        activation_fn=torch.nn.ReLU,
-                        normalize_images=False,
-                        net_arch=dict(pi=[512, 256, 128], qf=[256, 128]))
-                model = SAC('CnnPolicy', env, learning_rate=args.lr, batch_size=1024, verbose=0, tensorboard_log=log_dir, policy_kwargs=policy_kwargs, buffer_size=int(2e5), seed=1)
         if args.alg == 'ppo':
                 policy_kwargs = dict(
                         features_extractor_class=CustomExtractor,
-                        features_extractor_kwargs=dict(args=args, features_dim=300, ),  # 736,1472
+                        features_extractor_kwargs=dict(args=args, features_dim=1024, ),  # 736, 1472, 1024
+                        activation_fn=torch.nn.ReLU,
+                        normalize_images=False,
+                        net_arch=dict(pi=[512, 256, 128], qf=[256, 128]))
+                model = PPO('CnnPolicy', env, learning_rate=args.lr, verbose=0, tensorboard_log=log_dir, policy_kwargs=None, seed=1)
+        if args.alg == 'dqn':
+                policy_kwargs = dict(
+                        features_extractor_class=CustomExtractor,
+                        features_extractor_kwargs=dict(args=args, features_dim=1024, ),  # 736,1472
                         activation_fn=torch.nn.ReLU,
                         normalize_images=False,
                         net_arch=dict(pi=[512, 256, 128], vf=[256, 128]))
-                model = PPO('CnnPolicy', env, learning_rate=args.lr, batch_size=1024, verbose=0, tensorboard_log=log_dir, policy_kwargs=policy_kwargs, seed=1)
+                model = DQN('CnnPolicy', env, learning_rate=args.lr, verbose=0, tensorboard_log=log_dir, policy_kwargs=None, buffer_size=int(1e4), seed=1)
 
 # MLP model
 if args.input == 'short':
@@ -77,12 +77,12 @@ if args.input == 'short':
                 policy_kwargs = dict(
                         activation_fn=torch.nn.ReLU,
                         net_arch=dict(pi=[512, 512, 256], qf=[256, 512, 256]))
-                model = SAC('MlpPolicy', env, learning_rate=args.lr, batch_size=1024, verbose=0, tensorboard_log=log_dir, policy_kwargs=policy_kwargs, seed=1)
+                model = SAC('MlpPolicy', env, learning_rate=args.lr, verbose=0, tensorboard_log=log_dir, policy_kwargs=policy_kwargs, seed=1)
         if args.alg == 'ppo':
                 policy_kwargs = dict(
                         activation_fn=torch.nn.ReLU,
                         net_arch=dict(pi=[512, 512, 256], vf=[256, 512, 256]))
-                model = PPO('MlpPolicy', env, learning_rate=args.lr, batch_size=1024, verbose=0, tensorboard_log=log_dir, policy_kwargs=policy_kwargs, seed=1)
+                model = PPO('MlpPolicy', env, learning_rate=args.lr, verbose=0, tensorboard_log=log_dir, policy_kwargs=policy_kwargs, seed=1)
         
 # Load model
 # model_path = os.path.join(os.path.dirname(__file__), 'test_model/continue')
@@ -90,12 +90,12 @@ if args.input == 'short':
 
 
 # train
-ec = EvalCallback(eval_env, eval_freq=20000/num_envs, n_eval_episodes=20, deterministic=1, render=1, 
+ec = EvalCallback(eval_env, eval_freq=5000/num_envs, n_eval_episodes=20, deterministic=1, render=0, 
                   best_model_save_path=model_dir, log_path=log_dir)
-cc = CheckpointCallback(save_freq=int(1e5/num_envs), save_path=model_dir,
+cc = CheckpointCallback(save_freq=int(1e4/num_envs), save_path=model_dir,
                                              name_prefix='checkpoint_model')
 print(f'Training start at {start_time}. Learning rate:{args.lr} healthy reward:{args.hr} env: {args.env_name} algorithm: {args.alg}\ncomment:{args.suffix}')
-model.learn(total_timesteps=1e7, callback=CallbackList([ec,cc]))
+model.learn(total_timesteps=5e6, callback=CallbackList([ec,cc]))
 model.save(model_dir+'/final_model')
 end_time = time.strftime('%m%d%H')
 
